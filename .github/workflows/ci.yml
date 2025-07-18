@@ -39,10 +39,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build temp image for version detection
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          tags: temp-build:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Get WordPress version
         id: wp-version
         run: |
-          WP_VERSION=$(docker run --rm wordpress:latest wp --version --allow-root | grep -oP '\d+\.\d+\.\d+' | head -1)
+          WP_VERSION=$(docker run --rm temp-build:latest wp core version --skip-wordpress)
           echo "WORDPRESS_VERSION=$WP_VERSION" >> $GITHUB_OUTPUT
           echo "WordPress version: $WP_VERSION"
 
@@ -72,10 +82,13 @@ jobs:
       - name: Test container startup
         if: github.event_name != 'pull_request'
         run: |
+          # Test that WP-CLI is available in our built image
+          docker run --rm temp-build:latest wp --version
+
           # Start a test container without database (just test if it starts)
           docker run -d --name test-wordpress \
             -p 8080:80 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            temp-build:latest
 
           # Wait for Apache to start
           sleep 15
