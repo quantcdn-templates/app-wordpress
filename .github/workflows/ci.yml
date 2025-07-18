@@ -53,7 +53,7 @@ jobs:
       - name: Get WordPress version
         id: wp-version
         run: |
-          WP_VERSION=$(docker run --rm temp-build:latest wp core version --skip-wordpress)
+          WP_VERSION=$(docker run --rm temp-build:latest wp core version --path=/usr/src/wordpress)
           echo "WORDPRESS_VERSION=$WP_VERSION" >> $GITHUB_OUTPUT
           echo "WordPress version: $WP_VERSION"
 
