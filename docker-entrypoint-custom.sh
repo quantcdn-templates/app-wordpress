@@ -64,21 +64,6 @@ apply_env_mapping() {
     log "Environment variable mapping complete"
 }
 
-# Function to setup wp-content directories
-setup_wp_content() {
-    log "Setting up wp-content directories..."
-    
-    # Create wp-content directories if they don't exist
-    mkdir -p /var/www/html/wp-content/{themes,plugins,uploads}
-    
-    # Set proper permissions
-    chown -R www-data:www-data /var/www/html/wp-content
-    chmod -R 755 /var/www/html/wp-content
-    chmod -R 775 /var/www/html/wp-content/uploads
-    
-    log "wp-content directories set up successfully"
-}
-
 # Main execution
 main() {
     log "Starting WordPress initialization..."
@@ -90,9 +75,6 @@ main() {
     if [ -n "${DB_HOST:-${WORDPRESS_DB_HOST:-}}" ]; then
         wait_for_db
     fi
-    
-    # Setup wp-content directories
-    setup_wp_content
     
     log "WordPress initialization complete"
     log "Starting WordPress with command: $*"
