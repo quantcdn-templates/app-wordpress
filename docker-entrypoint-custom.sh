@@ -31,36 +31,46 @@ wait_for_db() {
 apply_env_mapping() {
     log "Applying Quant Cloud environment variable mappings..."
     
+    # Create environment file for WP-CLI
+    echo "#!/bin/bash" > /tmp/wp-env.sh
+    
     # Map Quant Cloud DB variables to WordPress variables if they exist
     if [ -n "${DB_HOST:-}" ]; then
         if [ -n "${DB_PORT:-}" ] && [ "${DB_PORT}" != "3306" ]; then
             export WORDPRESS_DB_HOST="${DB_HOST}:${DB_PORT}"
+            echo "export WORDPRESS_DB_HOST='${DB_HOST}:${DB_PORT}'" >> /tmp/wp-env.sh
         else
             export WORDPRESS_DB_HOST="${DB_HOST}"
+            echo "export WORDPRESS_DB_HOST='${DB_HOST}'" >> /tmp/wp-env.sh
         fi
         log "Mapped DB_HOST (${DB_HOST}) to WORDPRESS_DB_HOST"
     fi
     
     if [ -n "${DB_DATABASE:-}" ]; then
         export WORDPRESS_DB_NAME="${DB_DATABASE}"
+        echo "export WORDPRESS_DB_NAME='${DB_DATABASE}'" >> /tmp/wp-env.sh
         log "Mapped DB_DATABASE (${DB_DATABASE}) to WORDPRESS_DB_NAME"
     fi
     
     if [ -n "${DB_USERNAME:-}" ]; then
         export WORDPRESS_DB_USER="${DB_USERNAME}"
+        echo "export WORDPRESS_DB_USER='${DB_USERNAME}'" >> /tmp/wp-env.sh
         log "Mapped DB_USERNAME to WORDPRESS_DB_USER"
     fi
     
     if [ -n "${DB_PASSWORD:-}" ]; then
         export WORDPRESS_DB_PASSWORD="${DB_PASSWORD}"
+        echo "export WORDPRESS_DB_PASSWORD='${DB_PASSWORD}'" >> /tmp/wp-env.sh
         log "Mapped DB_PASSWORD to WORDPRESS_DB_PASSWORD"
     fi
     
     if [ -n "${WP_CONFIG_EXTRA:-}" ]; then
         export WORDPRESS_CONFIG_EXTRA="${WP_CONFIG_EXTRA}"
+        echo "export WORDPRESS_CONFIG_EXTRA='${WP_CONFIG_EXTRA}'" >> /tmp/wp-env.sh
         log "Mapped WP_CONFIG_EXTRA to WORDPRESS_CONFIG_EXTRA"
     fi
     
+    chmod +x /tmp/wp-env.sh
     log "Environment variable mapping complete"
 }
 

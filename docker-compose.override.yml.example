@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Local development overrides
 # Copy this file to docker-compose.override.yml for local development
 # (docker-compose.override.yml is git-ignored and won't be deployed)
