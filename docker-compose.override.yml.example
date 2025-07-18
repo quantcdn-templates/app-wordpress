@@ -1,0 +1,30 @@
+version: '3.8'
+
+# Local development overrides
+# Copy this file to docker-compose.override.yml for local development
+# (docker-compose.override.yml is git-ignored and won't be deployed)
+
+services:
+  wordpress:
+    environment:
+      # Local development database variables
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=wordpress
+      - DB_USERNAME=wordpress
+      - DB_PASSWORD=wordpress
+      # WordPress configuration for local development
+      - WORDPRESS_TABLE_PREFIX=wp_
+      - WORDPRESS_DEBUG=true
+      - WORDPRESS_DEBUG_LOG=true
+      - WORDPRESS_DEBUG_DISPLAY=true
+      - WP_CONFIG_EXTRA=
+      # WordPress security keys (will be auto-generated if not provided)
+      - WORDPRESS_AUTH_KEY=
+      - WORDPRESS_SECURE_AUTH_KEY=
+      - WORDPRESS_LOGGED_IN_KEY=
+      - WORDPRESS_NONCE_KEY=
+      - WORDPRESS_AUTH_SALT=
+      - WORDPRESS_SECURE_AUTH_SALT=
+      - WORDPRESS_LOGGED_IN_SALT=
+      - WORDPRESS_NONCE_SALT= 

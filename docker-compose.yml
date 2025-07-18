@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   wordpress:
     build:
@@ -9,28 +11,6 @@ services:
     volumes:
       - wordpress_data:/var/www/html
       - ./wp-content:/var/www/html/wp-content
-    environment:
-      # Quant Cloud database variables
-      - DB_HOST=${DB_HOST:-db}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_DATABASE=${DB_DATABASE:-wordpress}
-      - DB_USERNAME=${DB_USERNAME:-wordpress}
-      - DB_PASSWORD=${DB_PASSWORD:-wordpress}
-      # WordPress configuration
-      - WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX:-wp_}
-      - WORDPRESS_DEBUG=${WORDPRESS_DEBUG:-false}
-      - WORDPRESS_DEBUG_LOG=${WORDPRESS_DEBUG_LOG:-false}
-      - WORDPRESS_DEBUG_DISPLAY=${WORDPRESS_DEBUG_DISPLAY:-false}
-      - WP_CONFIG_EXTRA=${WP_CONFIG_EXTRA:-}
-      # WordPress security keys (optional, will be auto-generated if not provided)
-      - WORDPRESS_AUTH_KEY=${WORDPRESS_AUTH_KEY:-}
-      - WORDPRESS_SECURE_AUTH_KEY=${WORDPRESS_SECURE_AUTH_KEY:-}
-      - WORDPRESS_LOGGED_IN_KEY=${WORDPRESS_LOGGED_IN_KEY:-}
-      - WORDPRESS_NONCE_KEY=${WORDPRESS_NONCE_KEY:-}
-      - WORDPRESS_AUTH_SALT=${WORDPRESS_AUTH_SALT:-}
-      - WORDPRESS_SECURE_AUTH_SALT=${WORDPRESS_SECURE_AUTH_SALT:-}
-      - WORDPRESS_LOGGED_IN_SALT=${WORDPRESS_LOGGED_IN_SALT:-}
-      - WORDPRESS_NONCE_SALT=${WORDPRESS_NONCE_SALT:-}
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
       interval: 30s

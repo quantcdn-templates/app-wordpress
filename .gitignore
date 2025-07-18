@@ -3,6 +3,9 @@
 .env.local
 .env.production
 
+# Local development overrides (not for production deployment)
+docker-compose.override.yml
+
 # WordPress dynamic content
 wp-content/uploads/
 wp-content/cache/

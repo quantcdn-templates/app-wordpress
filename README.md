@@ -17,16 +17,21 @@ A production-ready WordPress template designed for deployment on Quant Cloud. Th
 ### Local Development
 
 1. Clone this repository
-2. Copy the environment file:
+2. Copy the local development overrides:
+   ```bash
+   cp docker-compose.override.yml.example docker-compose.override.yml
+   ```
+3. (Optional) Copy the environment file:
    ```bash
    cp .env.example .env
    ```
-3. Edit the `.env` file with your configuration
 4. Start the services:
    ```bash
    docker-compose up -d
    ```
 5. Access WordPress at http://localhost
+
+**Note**: The `docker-compose.override.yml` file provides local development database settings and is git-ignored to prevent conflicts with production deployments.
 
 ### Environment Variables
 
@@ -157,28 +162,31 @@ The template includes comprehensive health checks:
 
 ```
 app-wordpress/
-├── Dockerfile                     # WordPress image with env mapping
-├── docker-compose.yml             # Local development setup
-├── docker-entrypoint-custom.sh    # Custom entrypoint with env mapping
-├── .env.example                   # Environment variables example
+├── Dockerfile                           # WordPress image with env mapping
+├── docker-compose.yml                   # Production/base service definition
+├── docker-compose.override.yml.example  # Local development overrides template
+├── docker-entrypoint-custom.sh          # Custom entrypoint with env mapping
+├── .env.example                         # Environment variables example
 ├── .github/
 │   └── workflows/
-│       ├── build-deploy.yaml      # Quant Cloud ECR deployment
-│       └── ci.yml                 # GitHub Container Registry (public)
+│       ├── build-deploy.yaml            # Quant Cloud ECR deployment
+│       └── ci.yml                       # GitHub Container Registry (public)
 ├── quant/
-│   └── meta.json                  # Template metadata
-└── README.md                      # This file
+│   └── meta.json                        # Template metadata
+└── README.md                            # This file
 ```
 
 ## Local Development vs Production
 
 ### Local Development
 - Uses MySQL container (marked with `quant.type: none`)
-- Full docker-compose stack
+- Environment variables from `docker-compose.override.yml`
+- Debug mode enabled, full logging
 - File syncing for wp-content
 
 ### Quant Cloud Production
 - Uses managed database service
+- Environment variables from Quant Cloud platform
 - Single WordPress container
 - Persistent storage for wp-content
 - Automatic scaling and load balancing
