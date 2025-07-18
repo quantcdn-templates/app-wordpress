@@ -1,6 +1,6 @@
 # WordPress Template for Quant Cloud
 
-A production-ready WordPress template designed for deployment on Quant Cloud v2. This template uses the standard WordPress Docker image with intelligent environment variable mapping to support Quant Cloud's database configuration.
+A production-ready WordPress template designed for deployment on Quant Cloud. This template uses the standard WordPress Docker image with intelligent environment variable mapping to support Quant Cloud's database configuration.
 
 ## Features
 
@@ -105,34 +105,22 @@ ENV WP_CONFIG_EXTRA="define('WP_MEMORY_LIMIT', '512M');"
 
 The template includes a GitHub Actions workflow that:
 
-1. **Builds** the Docker image on every push
-2. **Tests** the image with health checks
-3. **Publishes** to GitHub Container Registry (`ghcr.io/quantcdn-templates/app-wordpress`)
-4. **Deploys** to Quant Cloud automatically
-5. **Tags** releases with WordPress version numbers
+1. **Builds** multi-platform Docker images (AMD64 and ARM64)
+2. **Pushes** to Quant Cloud's ECR registry
+3. **Redeploys** the environment automatically
+4. **Supports** staging (develop branch) and production (master branch) deployments
+5. **Tags** releases with version suffixes
 
 ### Required Secrets
 
 Configure these secrets in your GitHub repository:
 
 #### Quant Cloud Secrets
-- `CONTAINER_REGISTRY_URL`
-- `CONTAINER_REGISTRY_USER`
-- `CONTAINER_REGISTRY_TOKEN`
-- `CONTAINER_REGISTRY_PROJECT_PREFIX`
-- `QUANT_PROJECT_ID`
-- `QUANT_PROJECT_UUID`
-- `SECTION_K8S_API_URL`
-- `SECTION_API_TOKEN`
-- `QUANT_CUSTOMER_ID`
-- `QUANT_TOKEN`
+- `QUANT_API_KEY` - Your Quant Cloud API key
+- `QUANT_ORGANIZATION` - Your Quant Cloud organization name  
+- `QUANT_APPLICATION` - Your application name in Quant Cloud
 
-#### Database Secrets (Quant Cloud provides these)
-- `DB_HOST`
-- `DB_DATABASE`
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `DB_PORT` (optional, defaults to 3306)
+Database credentials are managed automatically by Quant Cloud and injected as environment variables at runtime.
 
 ## Architecture
 
@@ -169,38 +157,18 @@ The template includes comprehensive health checks:
 
 ```
 app-wordpress/
-├── Dockerfile                      # WordPress image with env mapping
+├── Dockerfile                     # WordPress image with env mapping
 ├── docker-compose.yml             # Local development setup
 ├── docker-entrypoint-custom.sh    # Custom entrypoint with env mapping
 ├── .env.example                   # Environment variables example
 ├── .github/
 │   └── workflows/
-│       ├── build-deploy.yaml      # Quant Cloud deployment
-│       └── ci.yml                 # GitHub Container Registry
+│       ├── build-deploy.yaml      # Quant Cloud ECR deployment
+│       └── ci.yml                 # GitHub Container Registry (public)
 ├── quant/
 │   └── meta.json                  # Template metadata
 └── README.md                      # This file
 ```
-
-## Production Considerations
-
-### Security
-- Change default database credentials
-- Use strong, unique salt keys
-- Enable HTTPS in production
-- Use Quant Cloud's secrets management
-
-### Performance
-- Use persistent volumes for wp-content
-- Configure object caching (Redis/Memcached)
-- Optimize database settings via Quant Cloud
-- Enable WordPress caching plugins
-
-### Monitoring
-- Monitor health check endpoints
-- Set up log aggregation via Quant Cloud
-- Configure alerts for failures
-- Monitor resource usage
 
 ## Local Development vs Production
 
@@ -239,7 +207,6 @@ app-wordpress/
 View container logs:
 ```bash
 docker-compose logs -f wordpress
-# Look for: "Environment variable mapping complete"
 ```
 
 ### Debug Mode
@@ -266,5 +233,5 @@ This template is released under the MIT License. See LICENSE file for details.
 
 For issues and questions:
 - GitHub Issues: [Create an issue](https://github.com/quantcdn-templates/app-wordpress/issues)
-- Documentation: [Quant Cloud Documentation](https://docs.quant.cloud)
+- Documentation: [Quant Cloud Documentation](https://docs.quantcdn.io/)
 - Community: [Quant Discord](https://discord.gg/quant) 

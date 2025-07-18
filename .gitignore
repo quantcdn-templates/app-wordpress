@@ -3,8 +3,13 @@
 .env.local
 .env.production
 
-# WordPress
-wp-content
+# WordPress dynamic content
+wp-content/uploads/
+wp-content/cache/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+wp-content/upgrade/
 
 # OS Files
 .DS_Store
