@@ -1,0 +1,43 @@
+{
+  "name": "app-wordpress",
+  "version": "1.0.0",
+  "description": "WordPress template for Quant Cloud v2",
+  "main": "docker-compose.yml",
+  "scripts": {
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "restart": "docker-compose restart",
+    "logs": "docker-compose logs -f",
+    "logs:wordpress": "docker-compose logs -f wordpress",
+    "logs:db": "docker-compose logs -f db",
+    "build": "docker-compose build",
+    "clean": "docker-compose down -v && docker system prune -f",
+    "shell:wordpress": "docker-compose exec wordpress bash",
+    "shell:db": "docker-compose exec db bash",
+    "wp:install": "docker-compose exec wordpress wp core install --url=http://localhost --title='WordPress Site' --admin_user=admin --admin_password=password --admin_email=admin@example.com --allow-root",
+    "wp:cli": "docker-compose exec wordpress wp",
+    "health": "docker-compose exec wordpress curl -f http://localhost/",
+    "backup:db": "docker-compose exec db mysqldump -u root -p$(grep MYSQL_ROOT_PASSWORD .env | cut -d '=' -f2) wordpress > backup_$(date +%Y%m%d_%H%M%S).sql",
+    "restore:db": "docker-compose exec -T db mysql -u root -p$(grep MYSQL_ROOT_PASSWORD .env | cut -d '=' -f2) wordpress < backup.sql"
+  },
+  "keywords": [
+    "wordpress",
+    "php",
+    "mysql",
+    "docker",
+    "quant-cloud",
+    "cms"
+  ],
+  "author": "Quant Cloud",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quantcdn-templates/app-wordpress.git"
+  },
+  "bugs": {
+    "url": "https://github.com/quantcdn-templates/app-wordpress/issues"
+  },
+  "homepage": "https://github.com/quantcdn-templates/app-wordpress#readme",
+  "devDependencies": {},
+  "dependencies": {}
+} 

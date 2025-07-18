@@ -1,0 +1,14 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# WordPress
+wp-content
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Database dumps
+*.sql 

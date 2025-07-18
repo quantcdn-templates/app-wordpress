@@ -1,0 +1,105 @@
+#!/bin/bash
+set -euo pipefail
+
+# Function to log messages
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" >&2
+}
+
+# Function to wait for database
+wait_for_db() {
+    local db_host="${DB_HOST:-${WORDPRESS_DB_HOST:-db}}"
+    local db_port="${DB_PORT:-3306}"
+    
+    # Handle host:port format
+    if [[ "$db_host" == *":"* ]]; then
+        db_port="${db_host##*:}"
+        db_host="${db_host%%:*}"
+    fi
+    
+    log "Waiting for database at $db_host:$db_port..."
+    
+    while ! nc -z "$db_host" "$db_port" 2>/dev/null; do
+        log "Database not ready, waiting..."
+        sleep 2
+    done
+    
+    log "Database is ready!"
+}
+
+# Function to apply environment variable mappings
+apply_env_mapping() {
+    log "Applying Quant Cloud environment variable mappings..."
+    
+    # Map Quant Cloud DB variables to WordPress variables if they exist
+    if [ -n "${DB_HOST:-}" ]; then
+        if [ -n "${DB_PORT:-}" ] && [ "${DB_PORT}" != "3306" ]; then
+            export WORDPRESS_DB_HOST="${DB_HOST}:${DB_PORT}"
+        else
+            export WORDPRESS_DB_HOST="${DB_HOST}"
+        fi
+        log "Mapped DB_HOST (${DB_HOST}) to WORDPRESS_DB_HOST"
+    fi
+    
+    if [ -n "${DB_DATABASE:-}" ]; then
+        export WORDPRESS_DB_NAME="${DB_DATABASE}"
+        log "Mapped DB_DATABASE (${DB_DATABASE}) to WORDPRESS_DB_NAME"
+    fi
+    
+    if [ -n "${DB_USERNAME:-}" ]; then
+        export WORDPRESS_DB_USER="${DB_USERNAME}"
+        log "Mapped DB_USERNAME to WORDPRESS_DB_USER"
+    fi
+    
+    if [ -n "${DB_PASSWORD:-}" ]; then
+        export WORDPRESS_DB_PASSWORD="${DB_PASSWORD}"
+        log "Mapped DB_PASSWORD to WORDPRESS_DB_PASSWORD"
+    fi
+    
+    if [ -n "${WP_CONFIG_EXTRA:-}" ]; then
+        export WORDPRESS_CONFIG_EXTRA="${WP_CONFIG_EXTRA}"
+        log "Mapped WP_CONFIG_EXTRA to WORDPRESS_CONFIG_EXTRA"
+    fi
+    
+    log "Environment variable mapping complete"
+}
+
+# Function to setup wp-content directories
+setup_wp_content() {
+    log "Setting up wp-content directories..."
+    
+    # Create wp-content directories if they don't exist
+    mkdir -p /var/www/html/wp-content/{themes,plugins,uploads}
+    
+    # Set proper permissions
+    chown -R www-data:www-data /var/www/html/wp-content
+    chmod -R 755 /var/www/html/wp-content
+    chmod -R 775 /var/www/html/wp-content/uploads
+    
+    log "wp-content directories set up successfully"
+}
+
+# Main execution
+main() {
+    log "Starting WordPress initialization..."
+    
+    # Apply environment variable mappings first
+    apply_env_mapping
+    
+    # Wait for database if configured
+    if [ -n "${DB_HOST:-${WORDPRESS_DB_HOST:-}}" ]; then
+        wait_for_db
+    fi
+    
+    # Setup wp-content directories
+    setup_wp_content
+    
+    log "WordPress initialization complete"
+    log "Starting WordPress with command: $*"
+    
+    # Call the original WordPress entrypoint
+    exec docker-entrypoint.sh "$@"
+}
+
+# Run main function with all arguments
+main "$@" 

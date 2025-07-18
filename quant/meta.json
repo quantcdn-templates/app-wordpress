@@ -1,0 +1,10 @@
+[{
+    "title": "WordPress",
+    "url": "/deploy/step-one?template=app-wordpress",
+    "summary": "WordPress is a free and open-source content management system written in PHP and paired with a MySQL or MariaDB database.",
+    "content": "WordPress is used by more than 60 million websites, including 33.6% of the top 10 million websites as of April 2019. WordPress is the most popular website management system in use. WordPress is one of the most popular content management system solutions in use, and it supports more than 60 million websites.",
+    "image": "https://raw.githubusercontent.com/quantcdn-templates/app-wordpress/main/quant/screenshot.png",
+    "categories": ["cms", "php", "wordpress"],
+    "tags": ["blog", "content-management", "mysql", "php"],
+    "template_type": "app"
+}] 

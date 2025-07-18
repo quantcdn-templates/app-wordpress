@@ -1,0 +1,195 @@
+name: Build and Deploy WordPress to Quant Cloud
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: quantcdn-templates/app-wordpress
+  QUANT_REGISTRY: ${{ secrets.CONTAINER_REGISTRY_URL }}
+  QUANT_IMAGE_NAME: ${{ secrets.CONTAINER_REGISTRY_URL }}/${{ secrets.CONTAINER_REGISTRY_PROJECT_PREFIX }}/${{ secrets.QUANT_PROJECT_ID }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    environment:
+      name: Quant Cloud (${{ github.head_ref || github.ref_name }})
+      url: ${{ steps.setup-branch-names.outputs.ENVIRONMENT_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create friendly branch name
+        id: setup-branch-names
+        run: |
+          BRANCH_NAME=`echo ${BRANCH_NAME##*/} | tr "[:upper:]" "[:lower:]" | sed "s/[^[:alnum:]]//g"`
+          echo $BRANCH_NAME
+          echo "BRANCH_NAME_CLEAN=$(echo $BRANCH_NAME)" >> $GITHUB_ENV
+          echo "ENVIRONMENT_URL=http://wordpress-$BRANCH_NAME.`echo ${{ secrets.QUANT_PROJECT_UUID }} | base64 -d`.apps.quant.cloud" >> $GITHUB_OUTPUT
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Quant Cloud Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.QUANT_REGISTRY }}
+          username: ${{ secrets.CONTAINER_REGISTRY_USER }}
+          password: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.QUANT_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ env.BRANCH_NAME_CLEAN }},enable={{is_default_branch}}
+
+      - name: Get WordPress version
+        id: wp-version
+        run: |
+          WP_VERSION=$(docker run --rm wordpress:latest wp --version --allow-root | grep -oP '\d+\.\d+\.\d+' | head -1)
+          echo "WORDPRESS_VERSION=$WP_VERSION" >> $GITHUB_OUTPUT
+          echo "WordPress version: $WP_VERSION"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.wp-version.outputs.WORDPRESS_VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME_CLEAN }}
+            ${{ env.QUANT_IMAGE_NAME }}:${{ env.BRANCH_NAME_CLEAN }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            WORDPRESS_VERSION=${{ steps.wp-version.outputs.WORDPRESS_VERSION }}
+            COMMIT_SHA=${{ github.sha }}
+
+      - name: Initialize Quant Cloud
+        if: github.event_name != 'pull_request'
+        uses: quantcdn/cloud-init-action@v1.0.0
+        env:
+          SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
+          SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
+
+      - name: Deploy to Quant Cloud
+        if: github.event_name != 'pull_request'
+        uses: koslib/helm-eks-action@v1.28.0
+        env:
+          KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
+        with:
+          command: |
+            helm repo add quantcdn https://quantcdn.github.io/helm-charts/
+            helm upgrade --install wordpress-${{ env.BRANCH_NAME_CLEAN }} quantcdn/wordpress \
+              --version 0.1.0 \
+              --set appVersion="${{ github.sha }}" \
+              --set appEnvironment="${{ env.BRANCH_NAME_CLEAN }}" \
+              --set images.app.repository="${{ env.QUANT_IMAGE_NAME }}" \
+              --set images.app.tag="${{ env.BRANCH_NAME_CLEAN }}" \
+              --set ingress.images.app.tag="${{ env.BRANCH_NAME_CLEAN }}" \
+              --set secrets.registry.user='${{ secrets.CONTAINER_REGISTRY_USER }}' \
+              --set secrets.registry.token='${{ secrets.CONTAINER_REGISTRY_TOKEN }}' \
+              --set wordpress.db.host="${{ secrets.DB_HOST }}" \
+              --set wordpress.db.database="${{ secrets.DB_DATABASE }}" \
+              --set wordpress.db.username="${{ secrets.DB_USERNAME }}" \
+              --set wordpress.db.password="${{ secrets.DB_PASSWORD }}" \
+              --set wordpress.db.port="${{ secrets.DB_PORT || '3306' }}"
+
+      - name: Clear the QuantCDN caches
+        if: github.event_name != 'pull_request'
+        uses: quantcdn/purge-action@v1.2.0
+        with:
+          customer: ${{ secrets.QUANT_CUSTOMER_ID }}
+          project: ${{ secrets.QUANT_PROJECT_ID }}
+          token: ${{ secrets.QUANT_TOKEN }}
+          url_pattern: "/*"
+
+      - name: Add deployment comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('WordPress deployment preview')
+            );
+            
+            const body = `## WordPress deployment preview
+            
+            🚀 Your WordPress deployment is ready for preview:
+            
+            - **Image**: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME_CLEAN }}\`
+            - **WordPress Version**: ${{ steps.wp-version.outputs.WORDPRESS_VERSION }}
+            - **Commit**: ${{ github.sha }}
+            - **Uses**: Standard WordPress wp-config-docker.php with Quant Cloud DB environment variables
+            
+            To test locally:
+            \`\`\`bash
+            docker run -d -p 8080:80 \\
+              -e DB_HOST=your_db_host \\
+              -e DB_DATABASE=your_db_name \\
+              -e DB_USERNAME=your_db_user \\
+              -e DB_PASSWORD=your_db_password \\
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME_CLEAN }}
+            \`\`\`
+            `;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            } 
