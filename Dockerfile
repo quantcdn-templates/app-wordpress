@@ -15,6 +15,9 @@ RUN chmod +x /usr/local/bin/docker-entrypoint-custom.sh
 # Set working directory
 WORKDIR /var/www/html
 
+# Run as www-data
+USER www-data
+
 # Expose port 80
 EXPOSE 80
 
