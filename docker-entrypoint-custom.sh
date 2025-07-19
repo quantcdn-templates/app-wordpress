@@ -6,27 +6,6 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" >&2
 }
 
-# Function to wait for database
-wait_for_db() {
-    local db_host="${DB_HOST:-${WORDPRESS_DB_HOST:-db}}"
-    local db_port="${DB_PORT:-3306}"
-    
-    # Handle host:port format
-    if [[ "$db_host" == *":"* ]]; then
-        db_port="${db_host##*:}"
-        db_host="${db_host%%:*}"
-    fi
-    
-    log "Waiting for database at $db_host:$db_port..."
-    
-    while ! nc -z "$db_host" "$db_port" 2>/dev/null; do
-        log "Database not ready, waiting..."
-        sleep 2
-    done
-    
-    log "Database is ready!"
-}
-
 # Function to apply environment variable mappings
 apply_env_mapping() {
     log "Applying Quant Cloud environment variable mappings..."
@@ -80,11 +59,6 @@ main() {
     
     # Apply environment variable mappings first
     apply_env_mapping
-    
-    # Wait for database if configured
-    if [ -n "${DB_HOST:-${WORDPRESS_DB_HOST:-}}" ]; then
-        wait_for_db
-    fi
     
     log "WordPress initialization complete"
     log "Starting WordPress with command: $*"

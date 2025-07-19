@@ -1,35 +1,43 @@
+# Use the official WordPress image as base
 FROM wordpress:latest
 
-# Install additional utilities needed for health checks and database connectivity
+# Install curl and sudo for health checks and privilege escalation
 RUN apt-get update && apt-get install -y \
     curl \
-    netcat-traditional \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # Install WP-CLI
-RUN curl -o wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
-    && chmod +x wp-cli.phar \
-    && mv wp-cli.phar /usr/local/bin/wp-cli.phar \
-    && echo '#!/bin/bash' > /usr/local/bin/wp \
-    && echo 'source /tmp/wp-env.sh 2>/dev/null || true' >> /usr/local/bin/wp \
+RUN curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.11.0/utils/wp-completion.bash \
+    && curl -L https://github.com/wp-cli/wp-cli/releases/download/v2.11.0/wp-cli-2.11.0.phar -o /usr/local/bin/wp-cli.phar \
+    && chmod +x /usr/local/bin/wp-cli.phar
+
+# Create WP-CLI wrapper that sources environment variables
+RUN echo '#!/bin/bash' > /usr/local/bin/wp \
+    && echo 'if [ -f /tmp/wp-env.sh ]; then source /tmp/wp-env.sh; fi' >> /usr/local/bin/wp \
     && echo 'exec php /usr/local/bin/wp-cli.phar "$@"' >> /usr/local/bin/wp \
     && chmod +x /usr/local/bin/wp
 
-# Copy custom entrypoint
-COPY docker-entrypoint-custom.sh /usr/local/bin/
+# Configure sudo for www-data to run apache2-foreground as root
+RUN echo 'www-data ALL=(root) NOPASSWD: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
+    && chmod 0440 /etc/sudoers.d/wordpress
 
-# Make the custom entrypoint executable
+# Create a wrapper for apache2-foreground that runs it as root
+RUN mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real \
+    && echo '#!/bin/bash' > /usr/local/bin/apache2-foreground \
+    && echo 'exec sudo /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
+    && chmod +x /usr/local/bin/apache2-foreground
+
+# Copy our custom entrypoint
+COPY docker-entrypoint-custom.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint-custom.sh
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Run as www-data
+# Run as www-data by default (for EFS operations)
 USER www-data
 
-# Expose port 80
-EXPOSE 80
-
-# Use custom entrypoint that handles environment variable mapping
+# Use our custom entrypoint
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint-custom.sh"]
 CMD ["apache2-foreground"] 
