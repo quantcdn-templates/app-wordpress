@@ -34,9 +34,6 @@ RUN mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real 
 COPY docker-entrypoint-custom.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint-custom.sh
 
-# Use the WordPress Docker config that reads environment variables (changes occasionally)
-RUN cp /usr/src/wordpress/wp-config-docker.php /usr/src/wordpress/wp-config.php
-
 # Set working directory
 WORKDIR /var/www/html
 
