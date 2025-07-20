@@ -75,8 +75,9 @@ rm .github/workflows/ci.yml
 
 ## Local Development
 
-For both deployment options, you can develop locally:
+For both deployment options, you can develop locally using either Docker Compose or DDEV:
 
+### Option 1: Docker Compose
 1. **Clone** your repo (or this template)
 2. **Copy overrides**:
    ```bash
@@ -87,6 +88,16 @@ For both deployment options, you can develop locally:
    docker-compose up -d
    ```
 4. **Access WordPress** at http://localhost
+
+### Option 2: DDEV (Recommended for Developers)
+1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
+2. **Start DDEV**:
+   ```bash
+   ddev start
+   ```
+3. **Access WordPress** at the provided DDEV URL
+
+DDEV provides additional developer tools like Xdebug, WP-CLI integration, and automatic WordPress setup. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
 

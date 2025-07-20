@@ -1,0 +1,35 @@
+name: wordpress-template
+type: wordpress
+docroot: .
+php_version: "8.3"
+webserver_type: apache-fpm
+xdebug_enabled: false
+database:
+    type: mysql
+    version: "8.0"
+use_dns_when_possible: true
+composer_version: "2"
+
+# Environment variables to match production setup
+web_environment:
+    - DB_HOST=db
+    - DB_PORT=3306  
+    - DB_DATABASE=db
+    - DB_USERNAME=db
+    - DB_PASSWORD=db
+    - WORDPRESS_DB_HOST=db
+    - WORDPRESS_DB_NAME=db
+    - WORDPRESS_DB_USER=db
+    - WORDPRESS_DB_PASSWORD=db
+    - WORDPRESS_DEBUG=true
+    - WORDPRESS_DEBUG_LOG=true
+
+# WordPress-specific settings
+upload_dirs:
+    - wp-content/uploads
+
+# Hooks for WordPress setup
+hooks:
+    post-start:
+        - exec: wp core download --skip-content --force --allow-root || true
+        - exec: wp config create --dbname=db --dbuser=db --dbpass=db --dbhost=db --allow-root || true 
