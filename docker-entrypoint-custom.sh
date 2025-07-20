@@ -70,14 +70,8 @@ main() {
     log "WordPress initialization complete"
     log "Starting WordPress with command: $*"
     
-    # Set environment variables for the exec'd process
-    env \
-        WORDPRESS_DB_HOST="${WORDPRESS_DB_HOST:-}" \
-        WORDPRESS_DB_NAME="${WORDPRESS_DB_NAME:-}" \
-        WORDPRESS_DB_USER="${WORDPRESS_DB_USER:-}" \
-        WORDPRESS_DB_PASSWORD="${WORDPRESS_DB_PASSWORD:-}" \
-        WORDPRESS_CONFIG_EXTRA="${WORDPRESS_CONFIG_EXTRA:-}" \
-        exec docker-entrypoint.sh "$@"
+    # Call the original WordPress entrypoint with environment variables
+    exec docker-entrypoint.sh "$@"
 }
 
 # Run main function with all arguments
