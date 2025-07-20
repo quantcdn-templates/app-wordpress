@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - develop
-      - master
+      - main
     tags:
       - '*'
 
@@ -34,8 +34,8 @@ jobs:
             # For develop branch, use -staging suffix
             echo "suffix=-staging" >> $GITHUB_OUTPUT
             echo "environment=staging" >> $GITHUB_OUTPUT
-          elif [[ $GITHUB_REF == refs/heads/master ]]; then
-            # For master branch, use -latest suffix
+          elif [[ $GITHUB_REF == refs/heads/main ]]; then
+            # For main branch, use -latest suffix
             echo "suffix=-latest" >> $GITHUB_OUTPUT
             echo "environment=production" >> $GITHUB_OUTPUT
           else
@@ -70,6 +70,11 @@ jobs:
           push: true
           tags: |
             ${{ steps.ecr-endpoint-stripped.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ secrets.QUANT_APPLICATION }}:wordpress${{ steps.vars.outputs.suffix }}
+          cache-from: |
+            type=gha
+            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache
+          cache-to: |
+            type=gha,mode=max
 
       - name: Redeploy environment
         uses: quantcdn/quant-cloud-environment-state-action@v1

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
     tags:
       - 'v*'
   pull_request:
@@ -63,11 +64,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ steps.wp-version.outputs.WORDPRESS_VERSION }},enable={{is_default_branch}}
+            type=raw,value=v${{ steps.wp-version.outputs.WORDPRESS_VERSION }},enable={{is_default_branch}}
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=v${{ steps.wp-version.outputs.WORDPRESS_VERSION }}-dev,enable=${{ github.ref == 'refs/heads/develop' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -77,8 +79,12 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha
+            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache
+          cache-to: |
+            type=gha,mode=max
+            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache,mode=max
 
       - name: Test container startup
         if: github.event_name != 'pull_request'

@@ -1,0 +1,52 @@
+# Git files
+.git
+.gitignore
+
+# CI/CD files
+.github
+
+# Documentation
+README.md
+LICENSE
+*.md
+docs/
+
+# Development tools
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Local development files
+.env
+.env.local
+docker-compose.override.yml
+
+# WordPress specific excludes
+wp-content/uploads/
+wp-content/cache/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Log files
+*.log
+
+# Test files
+tests/
+phpunit.xml 

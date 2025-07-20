@@ -8,188 +8,136 @@ A production-ready WordPress template designed for deployment on Quant Cloud. Th
 - **Standard Configuration**: Uses WordPress's built-in `wp-config-docker.php` with environment variable mapping
 - **Quant Cloud Integration**: Maps Quant Cloud's `DB_*` variables to WordPress standards
 - **Production Ready**: Includes health checks, proper file permissions, and security considerations
+- **WP-CLI Included**: WordPress CLI tool pre-installed and configured
+- **Privileged Port Binding**: Apache runs as root for port 80, workers run as www-data for security
 - **CI/CD Integration**: GitHub Actions workflow for automated building and deployment
 - **Multi-Registry Support**: Pushes to both GitHub Container Registry and Quant Cloud Registry
 - **Database Ready**: Works with Quant Cloud's managed database service
 
-## Quick Start
+## Deployment to Quant Cloud
 
-### Local Development
+This template provides two deployment options depending on your needs:
 
-1. Clone this repository
-2. Copy the local development overrides:
+### 🚀 Quick Start (Recommended)
+
+**Use our pre-built image** - Perfect for most users who want WordPress running quickly without customization.
+
+1. **Import Template**: In [Quant Dashboard](https://dashboard.quantcdn.io), create a new application and import this `docker-compose.yml` directly
+2. **Image Source**: The **"Public Registry"** image (`ghcr.io/quantcdn-templates/app-wordpress:latest`) will automatically be provided and used by default
+3. **Deploy**: Save the application - your WordPress site will be live in minutes!
+
+**What you get:**
+- ✅ Latest WordPress version
+- ✅ Automatic updates via our maintained image
+- ✅ Zero configuration required
+- ✅ Production-ready setup
+- ✅ Works with Quant Cloud's managed database
+
+### ⚙️ Advanced (Custom Build)
+
+**Fork and customize** - For users who need custom plugins, themes, or configuration.
+
+#### Step 1: Get the Template
+- Click **"Use this template"** on GitHub, or fork this repository
+- Clone your new repository locally
+
+#### Step 2: Setup CI/CD Pipeline  
+Add these secrets to your GitHub repository settings:
+- `QUANT_API_KEY` - Your Quant Cloud API key
+- `QUANT_ORGANIZATION` - Your organization slug (e.g., "my-company")  
+- `QUANT_APPLICATION` - Your application name (e.g., "my-wordpress-site")
+
+#### Step 3: Remove Public Registry CI
+Since you'll be using your own registry, delete the public build file:
+```bash
+rm .github/workflows/ci.yml
+```
+
+#### Step 4: Create Application
+1. In Quant Cloud, create a new application 
+2. Import your `docker-compose.yml`
+3. Select **"Internal Registry"** when prompted
+4. This will use your custom built image from the Quant Cloud private registry
+
+#### Step 5: Deploy
+- Push to `master` branch → Production deployment
+- Push to `develop` branch → Staging deployment  
+- Create tags → Tagged releases
+
+**What you get:**
+- ✅ Full customization control
+- ✅ Your own Docker registry
+- ✅ Automated builds on git push
+- ✅ Staging and production environments
+- ✅ Version tagging support
+
+---
+
+## Local Development
+
+For both deployment options, you can develop locally:
+
+1. **Clone** your repo (or this template)
+2. **Copy overrides**:
    ```bash
    cp docker-compose.override.yml.example docker-compose.override.yml
    ```
-3. (Optional) Copy the environment file:
-   ```bash
-   cp .env.example .env
-   ```
-4. Start the services:
+3. **Start services**:
    ```bash
    docker-compose up -d
    ```
-5. Access WordPress at http://localhost
+4. **Access WordPress** at http://localhost
 
-**Note**: The `docker-compose.override.yml` file provides local development database settings and is git-ignored to prevent conflicts with production deployments.
+**Local vs Quant Cloud:**
 
-### Environment Variables
+| Feature | Local Development | Quant Cloud |
+|---------|------------------|-------------|
+| **Database** | MySQL container | Managed RDS |
+| **Environment** | `docker-compose.override.yml` | Platform variables |
+| **Storage** | Local volumes | EFS persistent storage |
+| **Scaling** | Single container | Auto-scaling |
+| **Debug** | Enabled by default | Production optimized |
+| **Access** | localhost | Custom domains + CDN |
 
-The template supports Quant Cloud's standard database environment variables:
+## Environment Variables
 
-#### Database Configuration (Quant Cloud Standard)
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DB_HOST` | Database host | `db` |
-| `DB_PORT` | Database port | `3306` |
-| `DB_DATABASE` | Database name | `wordpress` |
-| `DB_USERNAME` | Database username | `wordpress` |
-| `DB_PASSWORD` | Database password | `wordpress` |
+### Database Configuration (Automatic)
+These are automatically provided by Quant Cloud:
+- `DB_HOST` - Database host
+- `DB_DATABASE` - Database name  
+- `DB_USERNAME` - Database username
+- `DB_PASSWORD` - Database password
 
-#### WordPress Configuration
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `WORDPRESS_TABLE_PREFIX` | Table prefix | `wp_` |
-| `WORDPRESS_DEBUG` | Enable debug mode | `false` |
-| `WORDPRESS_DEBUG_LOG` | Enable debug logging | `false` |
-| `WORDPRESS_DEBUG_DISPLAY` | Display debug info | `false` |
-| `WP_CONFIG_EXTRA` | Additional PHP configuration | `` |
+### Optional WordPress Configuration
+- `WORDPRESS_TABLE_PREFIX` - Table prefix (default: `wp_`)
+- `WORDPRESS_DEBUG` - Enable debug mode (default: `false`)
+- `WP_CONFIG_EXTRA` - Additional PHP configuration
 
-### WordPress Salt Keys
-
-For security, you should set the following environment variables with unique values:
-
-- `WORDPRESS_AUTH_KEY`
-- `WORDPRESS_SECURE_AUTH_KEY`
-- `WORDPRESS_LOGGED_IN_KEY`
-- `WORDPRESS_NONCE_KEY`
-- `WORDPRESS_AUTH_SALT`
-- `WORDPRESS_SECURE_AUTH_SALT`
-- `WORDPRESS_LOGGED_IN_SALT`
-- `WORDPRESS_NONCE_SALT`
-
-If not provided, WordPress will generate them automatically.
-
-## How It Works
-
-This template uses a smart approach to configuration:
-
-1. **Standard WordPress Base**: Uses the official WordPress Docker image with its built-in `wp-config-docker.php`
-2. **Environment Variable Mapping**: Maps Quant Cloud's `DB_*` variables to WordPress's expected `WORDPRESS_DB_*` variables
-3. **Zero Configuration Override**: No custom wp-config.php files - just environment variable translation
-
-### Environment Variable Mapping
-
-The template automatically maps:
-- `DB_HOST` + `DB_PORT` → `WORDPRESS_DB_HOST`
-- `DB_DATABASE` → `WORDPRESS_DB_NAME`
-- `DB_USERNAME` → `WORDPRESS_DB_USER`
-- `DB_PASSWORD` → `WORDPRESS_DB_PASSWORD`
-- `WP_CONFIG_EXTRA` → `WORDPRESS_CONFIG_EXTRA`
-
-## Custom Configuration
-
-### Method 1: Environment Variables (Recommended)
-
-Set environment variables in your deployment:
-
+**Example:**
 ```bash
-export WP_CONFIG_EXTRA="define('WP_MEMORY_LIMIT', '256M'); define('WP_MAX_MEMORY_LIMIT', '512M');"
+export WP_CONFIG_EXTRA="define('WP_MEMORY_LIMIT', '256M'); define('UPLOAD_MAX_FILESIZE', '64M');"
 ```
 
-### Method 2: Extend the Image
+## WP-CLI Support
 
-Create a custom Dockerfile:
-
-```dockerfile
-FROM quantcdn-templates/app-wordpress:latest
-ENV WP_CONFIG_EXTRA="define('WP_MEMORY_LIMIT', '512M');"
-```
-
-## CI/CD Pipeline
-
-The template includes a GitHub Actions workflow that:
-
-1. **Builds** multi-platform Docker images (AMD64 and ARM64)
-2. **Pushes** to Quant Cloud's ECR registry
-3. **Redeploys** the environment automatically
-4. **Supports** staging (develop branch) and production (master branch) deployments
-5. **Tags** releases with version suffixes
-
-### Required Secrets
-
-Configure these secrets in your GitHub repository:
-
-#### Quant Cloud Secrets
-- `QUANT_API_KEY` - Your Quant Cloud API key
-- `QUANT_ORGANIZATION` - Your Quant Cloud organization name  
-- `QUANT_APPLICATION` - Your application name in Quant Cloud
-
-Database credentials are managed automatically by Quant Cloud and injected as environment variables at runtime.
-
-## Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐
-│   WordPress     │    │  Quant Cloud    │
-│   Container     │◄──►│   Database      │
-│                 │    │                 │
-│ - Standard      │    │ - Managed       │
-│   wp-config     │    │ - Scalable      │
-│ - Env Mapping   │    │ - Secure        │
-│ - Health Check  │    │                 │
-└─────────────────┘    └─────────────────┘
-```
-
-## Health Checks
-
-The template includes comprehensive health checks:
-
-### WordPress Health Check
-- **Test**: HTTP request to the WordPress homepage
-- **Interval**: 30 seconds
-- **Timeout**: 10 seconds
-- **Start Period**: 60 seconds (allows WordPress to initialize)
-- **Retries**: 3
-
-### Database Health Check (Local Development Only)
-- **Test**: MySQL ping command
-- **Interval**: 10 seconds
-- **Timeout**: 5 seconds
-- **Retries**: 3
-
-## File Structure
-
-```
-app-wordpress/
-├── Dockerfile                           # WordPress image with env mapping
-├── docker-compose.yml                   # Production/base service definition
-├── docker-compose.override.yml.example  # Local development overrides template
-├── docker-entrypoint-custom.sh          # Custom entrypoint with env mapping
-├── .env.example                         # Environment variables example
-├── .github/
-│   └── workflows/
-│       ├── build-deploy.yaml            # Quant Cloud ECR deployment
-│       └── ci.yml                       # GitHub Container Registry (public)
-├── quant/
-│   └── meta.json                        # Template metadata
-└── README.md                            # This file
-```
-
-## Local Development vs Production
+This template includes WP-CLI (WordPress Command Line Interface) pre-installed and configured.
 
 ### Local Development
-- Uses MySQL container (marked with `quant.type: none`)
-- Environment variables from `docker-compose.override.yml`
-- Debug mode enabled, full logging
-- File syncing for wp-content
+```bash
+docker-compose exec wordpress wp --info
+docker-compose exec wordpress wp core version
+docker-compose exec wordpress wp plugin list
+```
 
-### Quant Cloud Production
-- Uses managed database service
-- Environment variables from Quant Cloud platform
-- Single WordPress container
-- Persistent storage for wp-content
-- Automatic scaling and load balancing
+### Quant Cloud (via SSH/exec)
+```bash
+wp --info
+wp core version  
+wp plugin install akismet --activate
+wp theme install twentytwentyfour --activate
+```
+
+WP-CLI automatically inherits the environment variables and database configuration, so it works seamlessly with both local and production environments.
 
 ## Troubleshooting
 
