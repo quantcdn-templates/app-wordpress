@@ -13,16 +13,19 @@ apply_env_mapping() {
     # Create environment file for WP-CLI
     echo "#!/bin/bash" > /tmp/wp-env.sh
     
+    # Create/append to Apache environment file (need sudo since we run as www-data)
+    sudo touch /etc/apache2/envvars
+    
     # Map Quant Cloud DB variables to WordPress variables if they exist
     if [ -n "${DB_HOST:-}" ]; then
         if [ -n "${DB_PORT:-}" ] && [ "${DB_PORT}" != "3306" ]; then
             export WORDPRESS_DB_HOST="${DB_HOST}:${DB_PORT}"
             echo "export WORDPRESS_DB_HOST='${DB_HOST}:${DB_PORT}'" >> /tmp/wp-env.sh
-            echo "WORDPRESS_DB_HOST=${DB_HOST}:${DB_PORT}" >> /etc/environment
+            echo "export WORDPRESS_DB_HOST=\"${DB_HOST}:${DB_PORT}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
         else
             export WORDPRESS_DB_HOST="${DB_HOST}"
             echo "export WORDPRESS_DB_HOST='${DB_HOST}'" >> /tmp/wp-env.sh
-            echo "WORDPRESS_DB_HOST=${DB_HOST}" >> /etc/environment
+            echo "export WORDPRESS_DB_HOST=\"${DB_HOST}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
         fi
         log "Mapped DB_HOST (${DB_HOST}) to WORDPRESS_DB_HOST"
     fi
@@ -30,34 +33,34 @@ apply_env_mapping() {
     if [ -n "${DB_DATABASE:-}" ]; then
         export WORDPRESS_DB_NAME="${DB_DATABASE}"
         echo "export WORDPRESS_DB_NAME='${DB_DATABASE}'" >> /tmp/wp-env.sh
-        echo "WORDPRESS_DB_NAME=${DB_DATABASE}" >> /etc/environment
+        echo "export WORDPRESS_DB_NAME=\"${DB_DATABASE}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
         log "Mapped DB_DATABASE (${DB_DATABASE}) to WORDPRESS_DB_NAME"
     fi
     
     if [ -n "${DB_USERNAME:-}" ]; then
         export WORDPRESS_DB_USER="${DB_USERNAME}"
         echo "export WORDPRESS_DB_USER='${DB_USERNAME}'" >> /tmp/wp-env.sh
-        echo "WORDPRESS_DB_USER=${DB_USERNAME}" >> /etc/environment
+        echo "export WORDPRESS_DB_USER=\"${DB_USERNAME}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
         log "Mapped DB_USERNAME to WORDPRESS_DB_USER"
     fi
     
     if [ -n "${DB_PASSWORD:-}" ]; then
         export WORDPRESS_DB_PASSWORD="${DB_PASSWORD}"
         echo "export WORDPRESS_DB_PASSWORD='${DB_PASSWORD}'" >> /tmp/wp-env.sh
-        echo "WORDPRESS_DB_PASSWORD=${DB_PASSWORD}" >> /etc/environment
+        echo "export WORDPRESS_DB_PASSWORD=\"${DB_PASSWORD}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
         log "Mapped DB_PASSWORD to WORDPRESS_DB_PASSWORD"
     fi
     
     if [ -n "${WP_CONFIG_EXTRA:-}" ]; then
         export WORDPRESS_CONFIG_EXTRA="${WP_CONFIG_EXTRA}"
         echo "export WORDPRESS_CONFIG_EXTRA='${WP_CONFIG_EXTRA}'" >> /tmp/wp-env.sh
-        echo "WORDPRESS_CONFIG_EXTRA=${WP_CONFIG_EXTRA}" >> /etc/environment
+        echo "export WORDPRESS_CONFIG_EXTRA=\"${WP_CONFIG_EXTRA}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
         log "Mapped WP_CONFIG_EXTRA to WORDPRESS_CONFIG_EXTRA"
     fi
     
     chmod +x /tmp/wp-env.sh
     log "Environment variable mapping complete"
-    log "WordPress environment variables written to /etc/environment"
+    log "WordPress environment variables written to Apache envvars"
 }
 
 # Main execution
@@ -70,7 +73,7 @@ main() {
     log "WordPress initialization complete"
     log "Starting WordPress with command: $*"
     
-    # Call the original WordPress entrypoint with environment variables
+    # Call the original WordPress entrypoint
     exec docker-entrypoint.sh "$@"
 }
 

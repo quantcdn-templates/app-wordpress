@@ -16,14 +16,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     echo '#!/bin/bash' > /usr/local/bin/wp \
     && echo 'if [ -f /tmp/wp-env.sh ]; then source /tmp/wp-env.sh; fi' >> /usr/local/bin/wp \
     && echo 'exec php /usr/local/bin/wp-cli.phar "$@"' >> /usr/local/bin/wp \
-    && chmod +x /usr/local/bin/wp \
-    && \
-    # Configure sudo for www-data to run apache2-foreground as root
-    echo 'www-data ALL=(root) NOPASSWD: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
-    && chmod 0440 /etc/sudoers.d/wordpress \
-    && \
-    # Create a wrapper for apache2-foreground that runs it as root
-    mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real \
+    && chmod +x /usr/local/bin/wp
+
+# Configure sudo for www-data to run apache2-foreground as root and modify Apache config
+RUN echo 'www-data ALL=(root) NOPASSWD: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
+    && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/tee -a /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
+    && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/touch /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
+    && chmod 0440 /etc/sudoers.d/wordpress
+
+# Create a wrapper for apache2-foreground that runs it as root
+RUN mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real \
     && echo '#!/bin/bash' > /usr/local/bin/apache2-foreground \
     && echo 'exec sudo /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
     && chmod +x /usr/local/bin/apache2-foreground
