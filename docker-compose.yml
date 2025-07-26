@@ -21,8 +21,8 @@ services:
 
   db:
     labels:
-      quant.type: none # We do not need a database container in Quant Cloud
-    image: mysql:8.0
+      quant.type: mysql
+    image: mysql:8.4
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
