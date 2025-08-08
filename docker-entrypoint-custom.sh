@@ -53,15 +53,9 @@ apply_env_mapping() {
     
     if [ -n "${WP_CONFIG_EXTRA:-}" ]; then
         export WORDPRESS_CONFIG_EXTRA="${WP_CONFIG_EXTRA}"
+        # WP-CLI convenience only; do not write to Apache env to avoid $ expansion
         echo "export WORDPRESS_CONFIG_EXTRA='${WP_CONFIG_EXTRA}'" >> /tmp/wp-env.sh
-        echo "export WORDPRESS_CONFIG_EXTRA=\"${WP_CONFIG_EXTRA}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
         log "Mapped WP_CONFIG_EXTRA to WORDPRESS_CONFIG_EXTRA"
-    fi
-
-    # Ensure WORDPRESS_CONFIG_EXTRA is also propagated to Apache env if provided directly
-    if [ -n "${WORDPRESS_CONFIG_EXTRA:-}" ]; then
-        echo "export WORDPRESS_CONFIG_EXTRA=\"${WORDPRESS_CONFIG_EXTRA}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
-        log "Propagated WORDPRESS_CONFIG_EXTRA to Apache envvars for PHP runtime"
     fi
     
     chmod +x /tmp/wp-env.sh
