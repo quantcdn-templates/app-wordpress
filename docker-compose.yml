@@ -9,11 +9,12 @@ services:
       - "80:80"
     environment:
       WORDPRESS_CONFIG_EXTRA: |
-        $host = $_SERVER['HTTP_HOST'] ?? null;
-        if ($host) {
-          $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-          define('WP_HOME', $scheme . '://' . $host);
-          define('WP_SITEURL', $scheme . '://' . $host);
+        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($$_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) { $$_SERVER['HTTPS'] = 'on'; }
+        $$host = $$_SERVER['HTTP_HOST'] ?? null;
+        if ($$host) {
+          $$scheme = (!empty($$_SERVER['HTTPS']) && $$_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+          define('WP_HOME', $$scheme . '://' . $$host);
+          define('WP_SITEURL', $$scheme . '://' . $$host);
         }
     volumes:
       - ./wp-content:/var/www/html/wp-content
