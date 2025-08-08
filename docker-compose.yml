@@ -7,6 +7,15 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    environment:
+      WP_CONFIG_EXTRA: |
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $_SERVER['HTTPS'] = 'on'; }
+        $host = $_SERVER['HTTP_HOST'] ?? null;
+        if ($host) {
+          $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+          define('WP_HOME', $scheme . '://' . $host);
+          define('WP_SITEURL', $scheme . '://' . $host);
+        }
     volumes:
       - ./wp-content:/var/www/html/wp-content
       - wordpress_data:/var/www/html
