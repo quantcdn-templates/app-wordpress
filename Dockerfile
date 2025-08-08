@@ -19,15 +19,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && chmod +x /usr/local/bin/wp
 
 # Configure sudo for www-data to run apache2-foreground as root and modify Apache config
-RUN echo 'www-data ALL=(root) NOPASSWD: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
+RUN echo 'www-data ALL=(root) NOPASSWD:SETENV: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
     && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/tee -a /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
     && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/touch /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
+    && echo 'Defaults:www-data env_keep += "WORDPRESS_CONFIG_EXTRA WORDPRESS_DB_HOST WORDPRESS_DB_NAME WORDPRESS_DB_USER WORDPRESS_DB_PASSWORD"' >> /etc/sudoers.d/wordpress \
     && chmod 0440 /etc/sudoers.d/wordpress
 
-# Create a wrapper for apache2-foreground that runs it as root
+# Create a wrapper for apache2-foreground that runs it as root and preserves required env vars
 RUN mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real \
     && echo '#!/bin/bash' > /usr/local/bin/apache2-foreground \
-    && echo 'exec sudo /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
+    && echo 'exec sudo --preserve-env=WORDPRESS_CONFIG_EXTRA,WORDPRESS_DB_HOST,WORDPRESS_DB_NAME,WORDPRESS_DB_USER,WORDPRESS_DB_PASSWORD /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
     && chmod +x /usr/local/bin/apache2-foreground
 
 # Copy custom entrypoint (changes occasionally)
