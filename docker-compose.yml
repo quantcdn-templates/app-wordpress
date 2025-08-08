@@ -8,8 +8,7 @@ services:
     ports:
       - "80:80"
     environment:
-      WP_CONFIG_EXTRA: |
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $_SERVER['HTTPS'] = 'on'; }
+      WORDPRESS_CONFIG_EXTRA: |
         $host = $_SERVER['HTTP_HOST'] ?? null;
         if ($host) {
           $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
