@@ -8,8 +8,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - wordpress_data:/var/www/html
       - ./wp-content:/var/www/html/wp-content
+      - wordpress_data:/var/www/html
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
       interval: 30s
