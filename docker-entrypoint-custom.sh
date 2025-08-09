@@ -76,6 +76,39 @@ sync_mu_plugins() {
     fi
 }
 
+# Ensure wp-config.php contains dynamic host logic before wp-settings.php is required
+ensure_wp_config_dynamic_urls() {
+    local wp_config="/var/www/html/wp-config.php"
+    if [ ! -f "${wp_config}" ]; then
+        log "wp-config.php not found yet; skipping dynamic URL injection"
+        return 0
+    fi
+
+    if grep -q "QUANT_DYNAMIC_URLS_START" "${wp_config}"; then
+        log "Dynamic URL block already present in wp-config.php; skipping"
+        return 0
+    fi
+
+    log "Ensuring Quant include is required from wp-config.php"
+    local include_line="require_once __DIR__ . '/quant/quant-include.php';"
+    # If include already present, do nothing
+    if grep -Fq "${include_line}" "${wp_config}"; then
+        log "Quant include already present in wp-config.php; skipping"
+        return 0
+    fi
+
+    # Insert the include just before wp-settings.php require
+    local tmp_new="${wp_config}.quanttmp"
+    awk -v inc="${include_line}" 'BEGIN{inserted=0} {
+        if (!inserted && $0 ~ /require_once.*wp-settings\.php/) {
+            print inc;
+            inserted=1;
+        }
+        print
+    }' "${wp_config}" > "${tmp_new}" && mv "${tmp_new}" "${wp_config}"
+    log "Quant include injected into wp-config.php"
+}
+
 # Main execution
 main() {
     log "Starting WordPress initialization..."
@@ -85,6 +118,9 @@ main() {
     
     # Ensure mu-plugins are present in the mounted wp-content
     sync_mu_plugins
+
+    # Ensure wp-config has early dynamic URL logic for admin redirects
+    ensure_wp_config_dynamic_urls
     
     log "WordPress initialization complete"
     log "Starting WordPress with command: $*"

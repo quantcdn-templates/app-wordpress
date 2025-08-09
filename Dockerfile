@@ -38,6 +38,9 @@ RUN chmod +x /usr/local/bin/docker-entrypoint-custom.sh
 # Include repository mu-plugins (synced into wp-content at runtime)
 COPY mu-plugins/ /mu-plugins/
 
+# Include Quant config include (synced into site root at runtime)
+COPY quant/ /quant/
+
 # Set working directory
 WORKDIR /var/www/html
 
