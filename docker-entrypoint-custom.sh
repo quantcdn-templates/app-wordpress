@@ -91,9 +91,14 @@ ensure_wp_config_dynamic_urls() {
 
     log "Ensuring Quant include is required from wp-config.php"
     local include_line="require_once '/quant/quant-include.php';"
-    # If any quant include already present (absolute or relative), do nothing
+    # If any quant include already present, ensure it's absolute; otherwise insert
     if grep -Fq "quant/quant-include.php" "${wp_config}"; then
-        log "Quant include already present in wp-config.php; skipping"
+        if grep -Fq "__DIR__ . '/quant/quant-include.php'" "${wp_config}"; then
+            sed -i "s~require_once __DIR__ . '/quant/quant-include.php';~${include_line}~" "${wp_config}"
+            log "Rewrote Quant include to absolute /quant path in wp-config.php"
+        else
+            log "Quant include already present (absolute) in wp-config.php; skipping"
+        fi
         return 0
     fi
 
