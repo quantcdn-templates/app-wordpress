@@ -90,9 +90,9 @@ ensure_wp_config_dynamic_urls() {
     fi
 
     log "Ensuring Quant include is required from wp-config.php"
-    local include_line="require_once __DIR__ . '/quant/quant-include.php';"
-    # If include already present, do nothing
-    if grep -Fq "${include_line}" "${wp_config}"; then
+    local include_line="require_once '/quant/quant-include.php';"
+    # If any quant include already present (absolute or relative), do nothing
+    if grep -Fq "quant/quant-include.php" "${wp_config}"; then
         log "Quant include already present in wp-config.php; skipping"
         return 0
     fi
