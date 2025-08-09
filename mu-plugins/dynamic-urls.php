@@ -20,29 +20,14 @@ function dynurls_current_host(): ?string {
     return $_SERVER['HTTP_HOST'] ?? null;
 }
 
-// Set WP_HOME and WP_SITEURL dynamically if not already defined
-add_action('init', function () {
-    $host = dynurls_current_host();
-    if (!$host) {
-        return;
-    }
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+// Define WP_HOME and WP_SITEURL as early as possible (pre-init)
+$__dyn_host = dynurls_current_host();
+if ($__dyn_host) {
+    $__dyn_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     if (!defined('WP_HOME')) {
-        define('WP_HOME', $scheme . '://' . $host);
+        define('WP_HOME', $__dyn_scheme . '://' . $__dyn_host);
     }
     if (!defined('WP_SITEURL')) {
-        define('WP_SITEURL', $scheme . '://' . $host);
+        define('WP_SITEURL', $__dyn_scheme . '://' . $__dyn_host);
     }
-});
-
-// Force uploads baseurl to current host
-add_filter('upload_dir', function ($data) {
-    $host = dynurls_current_host();
-    if (!$host) {
-        return $data;
-    }
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $data['baseurl'] = $scheme . '://' . $host . '/wp-content/uploads';
-    return $data;
-}, 99);
-
+}
