@@ -7,6 +7,11 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARD
     $_SERVER['HTTPS'] = 'on';
 }
 
+// Prefer Quant-Orig-Host for the effective host seen by WordPress and plugins
+if (!empty($_SERVER['HTTP_QUANT_ORIG_HOST'])) {
+    $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_QUANT_ORIG_HOST'];
+}
+
 // Resolve current host with Quant precedence
 function dynurls_current_host(): ?string {
     if (!empty($_SERVER['HTTP_QUANT_ORIG_HOST'])) {
