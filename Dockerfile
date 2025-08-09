@@ -35,6 +35,9 @@ RUN mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real 
 COPY docker-entrypoint-custom.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint-custom.sh
 
+# Include repository mu-plugins (synced into wp-content at runtime)
+COPY mu-plugins/ /mu-plugins/
+
 # Set working directory
 WORKDIR /var/www/html
 

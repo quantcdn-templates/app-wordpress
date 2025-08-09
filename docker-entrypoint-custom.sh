@@ -51,15 +51,29 @@ apply_env_mapping() {
         log "Mapped DB_PASSWORD to WORDPRESS_DB_PASSWORD"
     fi
     
-    if [ -n "${WP_CONFIG_EXTRA:-}" ]; then
-        export WORDPRESS_CONFIG_EXTRA="${WP_CONFIG_EXTRA}"
-        # Do not write WORDPRESS_CONFIG_EXTRA to /tmp/wp-env.sh to avoid quoting issues in WP-CLI
-        log "Mapped WP_CONFIG_EXTRA to WORDPRESS_CONFIG_EXTRA"
-    fi
+    # No longer support WP_CONFIG_EXTRA/WORDPRESS_CONFIG_EXTRA; mu-plugins handles dynamic URLs
     
     chmod +x /tmp/wp-env.sh
     log "Environment variable mapping complete"
     log "WordPress environment variables written to Apache envvars"
+}
+
+# Sync repository-provided mu-plugins into the EFS-mounted wp-content on each start
+sync_mu_plugins() {
+    local source_dir="/mu-plugins"
+    local target_dir="/var/www/html/wp-content/mu-plugins"
+    if [ -d "${source_dir}" ]; then
+        log "Syncing mu-plugins from ${source_dir} to ${target_dir}..."
+        mkdir -p "${target_dir}"
+        if command -v rsync >/dev/null 2>&1; then
+            rsync -a "${source_dir}/" "${target_dir}/"
+        else
+            cp -r "${source_dir}/." "${target_dir}/" || true
+        fi
+        log "mu-plugins sync complete"
+    else
+        log "No mu-plugins directory found at ${source_dir}; skipping sync"
+    fi
 }
 
 # Main execution
@@ -68,6 +82,9 @@ main() {
     
     # Apply environment variable mappings first
     apply_env_mapping
+    
+    # Ensure mu-plugins are present in the mounted wp-content
+    sync_mu_plugins
     
     log "WordPress initialization complete"
     log "Starting WordPress with command: $*"
