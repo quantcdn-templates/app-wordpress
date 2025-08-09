@@ -6,7 +6,12 @@ RUN groupmod -g 1000 www-data && \
     usermod -u 1000 -g 1000 www-data && \
     # Fix ownership of existing www-data files after UID/GID change
     find / -user 33 -exec chown www-data {} \; 2>/dev/null || true && \
-    find / -group 33 -exec chgrp www-data {} \; 2>/dev/null || true
+    find / -group 33 -exec chgrp www-data {} \; 2>/dev/null || true && \
+    # Fix Apache log directory permissions
+    chown -R www-data:www-data /var/log/apache2 && \
+    # Ensure Apache run directory exists and has correct permissions
+    mkdir -p /var/run/apache2 && \
+    chown -R www-data:www-data /var/run/apache2
 
 # Install system packages, WP-CLI, and configure sudo in consolidated layers (rarely changes)
 RUN apt-get update && apt-get install -y --no-install-recommends \
