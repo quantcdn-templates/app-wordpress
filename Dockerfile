@@ -1,6 +1,13 @@
 # Use the official WordPress image as base
 FROM wordpress:latest
 
+# Remap www-data to UID/GID 1000 to match EFS access points
+RUN groupmod -g 1000 www-data && \
+    usermod -u 1000 -g 1000 www-data && \
+    # Fix ownership of existing www-data files after UID/GID change
+    find / -user 33 -exec chown www-data {} \; 2>/dev/null || true && \
+    find / -group 33 -exec chgrp www-data {} \; 2>/dev/null || true
+
 # Install system packages, WP-CLI, and configure sudo in consolidated layers (rarely changes)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \

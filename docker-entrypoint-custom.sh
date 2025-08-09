@@ -76,16 +76,40 @@ sync_mu_plugins() {
     fi
 }
 
-# Ensure wp-config.php contains dynamic host logic before wp-settings.php is required
-ensure_wp_config_dynamic_urls() {
+# Ensure wp-config.php exists (similar to official entrypoint)
+ensure_wp_config_exists() {
+    # Check if we have WORDPRESS_ env vars and no wp-config.php
+    wpEnvs=( "${!WORDPRESS_@}" )
+    if [ ! -s /var/www/html/wp-config.php ] && [ "${#wpEnvs[@]}" -gt 0 ]; then
+        for wpConfigDocker in \
+            /var/www/html/wp-config-docker.php \
+            /usr/src/wordpress/wp-config-docker.php \
+        ; do
+            if [ -s "$wpConfigDocker" ]; then
+                log "No 'wp-config.php' found, creating from template with WORDPRESS_ variables"
+                # Create wp-config.php with unique salts
+                awk '
+                    /put your unique phrase here/ {
+                        cmd = "head -c1m /dev/urandom | sha1sum | cut -d\\  -f1"
+                        cmd | getline str
+                        close(cmd)
+                        gsub("put your unique phrase here", str)
+                    }
+                    { print }
+                ' "$wpConfigDocker" > /var/www/html/wp-config.php
+                # Skip chown - www-data already has UID 1000 matching EFS
+                # chown www-data:www-data /var/www/html/wp-config.php 2>/dev/null || true
+                break
+            fi
+        done
+    fi
+}
+
+# Inject Quant include into wp-config.php before wp-settings.php
+inject_wp_config_dynamic_urls() {
     local wp_config="/var/www/html/wp-config.php"
     if [ ! -f "${wp_config}" ]; then
-        log "wp-config.php not found yet; skipping dynamic URL injection"
-        return 0
-    fi
-
-    if grep -q "QUANT_DYNAMIC_URLS_START" "${wp_config}"; then
-        log "Dynamic URL block already present in wp-config.php; skipping"
+        log "wp-config.php not found; cannot inject Quant include"
         return 0
     fi
 
@@ -124,8 +148,11 @@ main() {
     # Ensure mu-plugins are present in the mounted wp-content
     sync_mu_plugins
 
-    # Ensure wp-config has early dynamic URL logic for admin redirects
-    ensure_wp_config_dynamic_urls
+    # Ensure wp-config.php exists (create if needed like official entrypoint)
+    ensure_wp_config_exists
+    
+    # Inject Quant include into wp-config.php
+    inject_wp_config_dynamic_urls
     
     log "WordPress initialization complete"
     log "Starting WordPress with command: $*"
