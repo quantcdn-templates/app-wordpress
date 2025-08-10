@@ -51,7 +51,12 @@ apply_env_mapping() {
         log "Mapped DB_PASSWORD to WORDPRESS_DB_PASSWORD"
     fi
     
-    # No longer support WP_CONFIG_EXTRA/WORDPRESS_CONFIG_EXTRA; mu-plugins handles dynamic URLs
+    # Pass through WORDPRESS_TABLE_PREFIX if set
+    if [ -n "${WORDPRESS_TABLE_PREFIX:-}" ]; then
+        echo "export WORDPRESS_TABLE_PREFIX='${WORDPRESS_TABLE_PREFIX}'" >> /tmp/wp-env.sh
+        echo "export WORDPRESS_TABLE_PREFIX=\"${WORDPRESS_TABLE_PREFIX}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
+        log "Preserved WORDPRESS_TABLE_PREFIX (${WORDPRESS_TABLE_PREFIX})"
+    fi
     
     chmod +x /tmp/wp-env.sh
     log "Environment variable mapping complete"
