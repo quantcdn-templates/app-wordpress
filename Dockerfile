@@ -17,6 +17,7 @@ RUN groupmod -g 1000 www-data && \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         sudo \
+        gosu \
     && rm -rf /var/lib/apt/lists/* \
     && \
     # Install WP-CLI
@@ -52,13 +53,15 @@ COPY mu-plugins/ /mu-plugins/
 
 # Include Quant config include (synced into site root at runtime)
 COPY quant/ /quant/
+RUN chmod +x /quant/entrypoints.sh && \
+    if [ -d /quant/entrypoints ]; then chmod +x /quant/entrypoints/*; fi
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Run as www-data by default (for EFS operations)
-USER www-data
+# Start as root for entrypoints, then switch to www-data
+# (entrypoints.sh will use gosu to switch to www-data for the main application)
 
-# Use our custom entrypoint
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint-custom.sh"]
+# Use Quant entrypoints as the main entrypoint
+ENTRYPOINT ["/quant/entrypoints.sh", "/usr/local/bin/docker-entrypoint-custom.sh"]
 CMD ["apache2-foreground"] 
