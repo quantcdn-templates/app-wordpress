@@ -1,5 +1,6 @@
-# Use the official WordPress image as base
-FROM wordpress:latest
+# Use the official WordPress image as base (allows override for legacy PHP versions)
+ARG BASE_IMAGE=wordpress:latest
+FROM ${BASE_IMAGE}
 
 # Remap www-data to UID/GID 1000 to match EFS access points
 RUN groupmod -g 1000 www-data && \
