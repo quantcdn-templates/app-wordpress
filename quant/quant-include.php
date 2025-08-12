@@ -2,6 +2,9 @@
 // Quant Cloud dynamic host include
 // Executed from wp-config.php before wp-settings.php
 
+// Suppress warnings and notices
+$previous_error_reporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR);
+
 // Normalize HTTPS behind proxy/edge
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
     $_SERVER['HTTPS'] = 'on';
