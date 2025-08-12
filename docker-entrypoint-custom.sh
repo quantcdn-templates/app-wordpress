@@ -58,6 +58,19 @@ apply_env_mapping() {
         log "Preserved WORDPRESS_TABLE_PREFIX (${WORDPRESS_TABLE_PREFIX})"
     fi
     
+    # Pass through Quant SMTP variables if set
+    if [ -n "${QUANT_SMTP_FROM:-}" ]; then
+        echo "export QUANT_SMTP_FROM='${QUANT_SMTP_FROM}'" >> /tmp/wp-env.sh
+        echo "export QUANT_SMTP_FROM=\"${QUANT_SMTP_FROM}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
+        log "Preserved QUANT_SMTP_FROM (${QUANT_SMTP_FROM})"
+    fi
+    
+    if [ -n "${QUANT_SMTP_FROM_NAME:-}" ]; then
+        echo "export QUANT_SMTP_FROM_NAME='${QUANT_SMTP_FROM_NAME}'" >> /tmp/wp-env.sh
+        echo "export QUANT_SMTP_FROM_NAME=\"${QUANT_SMTP_FROM_NAME}\"" | sudo tee -a /etc/apache2/envvars > /dev/null
+        log "Preserved QUANT_SMTP_FROM_NAME (${QUANT_SMTP_FROM_NAME})"
+    fi
+    
     chmod +x /tmp/wp-env.sh
     log "Environment variable mapping complete"
     log "WordPress environment variables written to Apache envvars"

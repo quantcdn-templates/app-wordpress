@@ -35,13 +35,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN echo 'www-data ALL=(root) NOPASSWD:SETENV: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
     && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/tee -a /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
     && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/touch /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
-    && echo 'Defaults:www-data env_keep += "WORDPRESS_CONFIG_EXTRA WORDPRESS_DB_HOST WORDPRESS_DB_NAME WORDPRESS_DB_USER WORDPRESS_DB_PASSWORD WORDPRESS_TABLE_PREFIX"' >> /etc/sudoers.d/wordpress \
+    && echo 'Defaults:www-data env_keep += "WORDPRESS_CONFIG_EXTRA WORDPRESS_DB_HOST WORDPRESS_DB_NAME WORDPRESS_DB_USER WORDPRESS_DB_PASSWORD WORDPRESS_TABLE_PREFIX QUANT_SMTP_FROM QUANT_SMTP_FROM_NAME"' >> /etc/sudoers.d/wordpress \
     && chmod 0440 /etc/sudoers.d/wordpress
 
 # Create a wrapper for apache2-foreground that runs it as root and preserves required env vars
 RUN mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real \
     && echo '#!/bin/bash' > /usr/local/bin/apache2-foreground \
-    && echo 'exec sudo --preserve-env=WORDPRESS_CONFIG_EXTRA,WORDPRESS_DB_HOST,WORDPRESS_DB_NAME,WORDPRESS_DB_USER,WORDPRESS_DB_PASSWORD,WORDPRESS_TABLE_PREFIX /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
+    && echo 'exec sudo --preserve-env=WORDPRESS_CONFIG_EXTRA,WORDPRESS_DB_HOST,WORDPRESS_DB_NAME,WORDPRESS_DB_USER,WORDPRESS_DB_PASSWORD,WORDPRESS_TABLE_PREFIX,QUANT_SMTP_FROM,QUANT_SMTP_FROM_NAME /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
     && chmod +x /usr/local/bin/apache2-foreground
 
 # Copy custom entrypoint (changes occasionally)
@@ -55,6 +55,9 @@ COPY mu-plugins/ /mu-plugins/
 COPY quant/ /quant/
 RUN chmod +x /quant/entrypoints.sh && \
     if [ -d /quant/entrypoints ]; then chmod +x /quant/entrypoints/*; fi
+
+# Copy Quant PHP configuration files (allows users to add custom PHP configs)
+COPY quant/php.ini.d/* /usr/local/etc/php/conf.d/
 
 # Set working directory
 WORKDIR /var/www/html

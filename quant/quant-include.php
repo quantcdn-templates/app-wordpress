@@ -2,8 +2,10 @@
 // Quant Cloud dynamic host include
 // Executed from wp-config.php before wp-settings.php
 
-// Suppress warnings and notices
-$previous_error_reporting = error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR);
+// Prevent WordPress and plugins from overriding our error reporting (configured in 99-quant-logging.ini)
+if (!defined('WP_DEBUG')) define('WP_DEBUG', false);
+if (!defined('WP_DEBUG_LOG')) define('WP_DEBUG_LOG', false);  
+if (!defined('WP_DEBUG_DISPLAY')) define('WP_DEBUG_DISPLAY', false);
 
 // Normalize HTTPS behind proxy/edge
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
@@ -24,3 +26,11 @@ if ($__quant_host) {
 
 unset($__quant_host, $__quant_scheme);
 
+// Store email configuration for WordPress (to be used by mu-plugin later)
+if (!empty($_ENV['QUANT_SMTP_FROM'])) {
+    define('QUANT_SMTP_FROM_EMAIL', $_ENV['QUANT_SMTP_FROM']);
+}
+
+if (!empty($_ENV['QUANT_SMTP_FROM_NAME'])) {
+    define('QUANT_SMTP_FROM_NAME_VALUE', $_ENV['QUANT_SMTP_FROM_NAME']);
+}
