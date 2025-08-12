@@ -2,10 +2,34 @@
 // Quant Cloud dynamic host include
 // Executed from wp-config.php before wp-settings.php
 
-// Prevent WordPress and plugins from overriding our error reporting (configured in 99-quant-logging.ini)
+// Custom error handler - WordPress overrides php.ini, so we need runtime control
+$quant_debug_mode = !empty($_ENV['LOG_DEBUG']) || !empty($_ENV['QUANT_DEBUG']);
+
+set_error_handler(function($severity, $message, $file, $line) use ($quant_debug_mode) {
+    // Always log critical errors (fatal, parse, core, compile, user, recoverable)
+    $critical_errors = E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR;
+    
+    if ($severity & $critical_errors) {
+        error_log("PHP Error [$severity]: $message in $file on line $line");
+        return false; // Let PHP handle fatal errors normally
+    }
+    
+    // In debug mode, log warnings/notices with different prefix
+    if ($quant_debug_mode) {
+        error_log("PHP Debug [$severity]: $message in $file on line $line");
+        return true;
+    }
+    
+    // Suppress warnings/notices in production by returning true (handled)
+    return true;
+}, E_ALL);
+
+// Prevent WordPress from overriding our error settings
 if (!defined('WP_DEBUG')) define('WP_DEBUG', false);
 if (!defined('WP_DEBUG_LOG')) define('WP_DEBUG_LOG', false);  
 if (!defined('WP_DEBUG_DISPLAY')) define('WP_DEBUG_DISPLAY', false);
+
+error_log("[Quant] Custom error handler active - warnings/notices " . ($quant_debug_mode ? "enabled" : "suppressed") . " (debug: " . ($quant_debug_mode ? "ON" : "OFF") . ")");
 
 // Normalize HTTPS behind proxy/edge
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
