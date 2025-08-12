@@ -4,6 +4,7 @@
 
 // Custom error handler - WordPress overrides php.ini, so we need runtime control
 $quant_debug_mode = !empty($_ENV['LOG_DEBUG']) || !empty($_ENV['QUANT_DEBUG']);
+define('QUANT_DEBUG_MODE', $quant_debug_mode);
 
 set_error_handler(function($severity, $message, $file, $line) use ($quant_debug_mode) {
     // Always log critical errors (fatal, parse, core, compile, user, recoverable)
@@ -29,7 +30,10 @@ if (!defined('WP_DEBUG')) define('WP_DEBUG', false);
 if (!defined('WP_DEBUG_LOG')) define('WP_DEBUG_LOG', false);  
 if (!defined('WP_DEBUG_DISPLAY')) define('WP_DEBUG_DISPLAY', false);
 
-error_log("[Quant] Custom error handler active - warnings/notices " . ($quant_debug_mode ? "enabled" : "suppressed") . " (debug: " . ($quant_debug_mode ? "ON" : "OFF") . ")");
+// Only log configuration in debug mode to avoid log noise
+if ($quant_debug_mode) {
+    error_log("[Quant] Custom error handler active - warnings/notices enabled (debug: ON)");
+}
 
 // Normalize HTTPS behind proxy/edge
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
@@ -53,8 +57,16 @@ unset($__quant_host, $__quant_scheme);
 // Store email configuration for WordPress (to be used by mu-plugin later)
 if (!empty($_ENV['QUANT_SMTP_FROM'])) {
     define('QUANT_SMTP_FROM_EMAIL', $_ENV['QUANT_SMTP_FROM']);
+    // Only log in debug mode to avoid request noise
+    if ($quant_debug_mode) {
+        error_log("[Quant] QUANT_SMTP_FROM stored: " . $_ENV['QUANT_SMTP_FROM']);
+    }
 }
 
 if (!empty($_ENV['QUANT_SMTP_FROM_NAME'])) {
     define('QUANT_SMTP_FROM_NAME_VALUE', $_ENV['QUANT_SMTP_FROM_NAME']);
+    // Only log in debug mode to avoid request noise
+    if ($quant_debug_mode) {
+        error_log("[Quant] QUANT_SMTP_FROM_NAME stored: " . $_ENV['QUANT_SMTP_FROM_NAME']);
+    }
 }

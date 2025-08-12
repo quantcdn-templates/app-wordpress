@@ -12,7 +12,10 @@ if (defined('QUANT_SMTP_FROM_EMAIL')) {
         return $from_email;
     });
     
-    error_log("[Quant] WordPress email 'from' address filter applied: " . QUANT_SMTP_FROM_EMAIL);
+    // Only log in debug mode to avoid request noise
+    if (defined('QUANT_DEBUG_MODE') && QUANT_DEBUG_MODE) {
+        error_log("[Quant] WordPress email 'from' address filter applied: " . QUANT_SMTP_FROM_EMAIL);
+    }
 }
 
 // Set default 'from' name if QUANT_SMTP_FROM_NAME is configured
@@ -25,6 +28,9 @@ if (defined('QUANT_SMTP_FROM_NAME_VALUE')) {
         return $from_name;
     });
     
-    error_log("[Quant] WordPress email 'from' name filter applied: " . QUANT_SMTP_FROM_NAME_VALUE);
+    // Only log in debug mode to avoid request noise
+    if (defined('QUANT_DEBUG_MODE') && QUANT_DEBUG_MODE) {
+        error_log("[Quant] WordPress email 'from' name filter applied: " . QUANT_SMTP_FROM_NAME_VALUE);
+    }
 }
 ?>
