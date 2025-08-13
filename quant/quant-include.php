@@ -45,11 +45,6 @@ if (!empty($_SERVER['HTTP_QUANT_ORIG_HOST'])) {
     $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_QUANT_ORIG_HOST'];
 }
 
-// Set real client IP from Quant-Client-IP header
-if (!empty($_SERVER['HTTP_QUANT_CLIENT_IP'])) {
-    $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_QUANT_CLIENT_IP'];
-}
-
 $__quant_host = $_SERVER['HTTP_HOST'] ?? null;
 if ($__quant_host) {
     $__quant_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
