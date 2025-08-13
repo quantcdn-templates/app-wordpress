@@ -4,12 +4,6 @@
 if [ -n "$QUANT_SMTP_HOST" ] && [ "$QUANT_SMTP_RELAY_ENABLED" = "true" ]; then
     echo "Configuring Postfix SMTP relay with host: $QUANT_SMTP_HOST"
     
-    # Install Postfix if not already installed
-    if ! command -v postconf >/dev/null 2>&1; then
-        echo "Installing Postfix with SASL support..."
-        apt-get update && apt-get install -y --no-install-recommends postfix ca-certificates libsasl2-modules
-    fi
-    
     # Configure domain from QUANT_SMTP_FROM_DOMAIN or extract from QUANT_SMTP_FROM
     if [ -n "$QUANT_SMTP_FROM_DOMAIN" ]; then
         DOMAIN="$QUANT_SMTP_FROM_DOMAIN"
@@ -20,6 +14,16 @@ if [ -n "$QUANT_SMTP_HOST" ] && [ "$QUANT_SMTP_RELAY_ENABLED" = "true" ]; then
     fi
     
     POSTFIX_HOSTNAME="${QUANT_SMTP_HOSTNAME:-wordpress.$DOMAIN}"
+    
+    # Install Postfix if not already installed
+    if ! command -v postconf >/dev/null 2>&1; then
+        echo "Installing Postfix with SASL support..."
+        # Pre-configure Postfix to avoid interactive prompts
+        export DEBIAN_FRONTEND=noninteractive
+        echo "postfix postfix/main_mailer_type select Internet Site" | debconf-set-selections
+        echo "postfix postfix/mailname string $POSTFIX_HOSTNAME" | debconf-set-selections
+        apt-get update && apt-get install -y --no-install-recommends postfix ca-certificates libsasl2-modules
+    fi
     postconf -e "myhostname=$POSTFIX_HOSTNAME"
     postconf -e "mydomain=$DOMAIN"
     postconf -e "myorigin=\$mydomain"

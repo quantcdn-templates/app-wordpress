@@ -21,6 +21,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gosu \
     && rm -rf /var/lib/apt/lists/* \
     && \
+    # Install missing PHP sockets extension (required for WordPress FTP functionality)
+    docker-php-ext-install sockets \
+    && \
+    # Enable mod_remoteip for proper client IP handling
+    a2enmod remoteip \
+    && \
+    # Add Quant-Client-IP header to existing remoteip configuration
+    echo 'RemoteIPHeader Quant-Client-IP' >> /etc/apache2/conf-available/remoteip.conf \
+    && a2enconf remoteip \
+    && \
     # Install WP-CLI
     curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.11.0/utils/wp-completion.bash \
     && curl -L https://github.com/wp-cli/wp-cli/releases/download/v2.11.0/wp-cli-2.11.0.phar -o /usr/local/bin/wp-cli.phar \
