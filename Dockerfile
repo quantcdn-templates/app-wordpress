@@ -46,13 +46,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN echo 'www-data ALL=(root) NOPASSWD:SETENV: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
     && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/tee -a /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
     && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/touch /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
-    && echo 'Defaults:www-data env_keep += "WORDPRESS_CONFIG_EXTRA WORDPRESS_DB_HOST WORDPRESS_DB_NAME WORDPRESS_DB_USER WORDPRESS_DB_PASSWORD WORDPRESS_TABLE_PREFIX QUANT_SMTP_FROM QUANT_SMTP_FROM_NAME"' >> /etc/sudoers.d/wordpress \
+    && echo 'Defaults:www-data env_keep += "WORDPRESS_CONFIG_EXTRA WORDPRESS_DB_HOST WORDPRESS_DB_NAME WORDPRESS_DB_USER WORDPRESS_DB_PASSWORD WORDPRESS_TABLE_PREFIX QUANT_SMTP_FROM QUANT_SMTP_FROM_NAME QUANT_ENABLED QUANT_DISABLE_TLS_VERIFY QUANT_HTTP_REQUEST_TIMEOUT QUANT_WEBSERVER_URL QUANT_WEBSERVER_HOST QUANT_API_ENDPOINT QUANT_CUSTOMER QUANT_PROJECT QUANT_TOKEN"' >> /etc/sudoers.d/wordpress \
     && chmod 0440 /etc/sudoers.d/wordpress
 
 # Create a wrapper for apache2-foreground that runs it as root and preserves required env vars
 RUN mv /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-real \
     && echo '#!/bin/bash' > /usr/local/bin/apache2-foreground \
-    && echo 'exec sudo --preserve-env=WORDPRESS_CONFIG_EXTRA,WORDPRESS_DB_HOST,WORDPRESS_DB_NAME,WORDPRESS_DB_USER,WORDPRESS_DB_PASSWORD,WORDPRESS_TABLE_PREFIX,QUANT_SMTP_FROM,QUANT_SMTP_FROM_NAME /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
+    && echo 'exec sudo --preserve-env=WORDPRESS_CONFIG_EXTRA,WORDPRESS_DB_HOST,WORDPRESS_DB_NAME,WORDPRESS_DB_USER,WORDPRESS_DB_PASSWORD,WORDPRESS_TABLE_PREFIX,QUANT_SMTP_FROM,QUANT_SMTP_FROM_NAME,QUANT_ENABLED,QUANT_DISABLE_TLS_VERIFY,QUANT_HTTP_REQUEST_TIMEOUT,QUANT_WEBSERVER_URL,QUANT_WEBSERVER_HOST,QUANT_API_ENDPOINT,QUANT_CUSTOMER,QUANT_PROJECT,QUANT_TOKEN /usr/local/bin/apache2-foreground-real "$@"' >> /usr/local/bin/apache2-foreground \
     && chmod +x /usr/local/bin/apache2-foreground
 
 # Copy custom entrypoint (changes occasionally)
