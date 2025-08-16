@@ -42,6 +42,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && echo 'exec php /usr/local/bin/wp-cli.phar "$@"' >> /usr/local/bin/wp \
     && chmod +x /usr/local/bin/wp
 
+# Quant Host header override (VirtualHost include approach)
+RUN a2enmod headers rewrite
+
+RUN cat <<'EOF' > /etc/apache2/conf-available/quant-host-snippet.conf
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Only accept well-formed hosts (optional port)
+    RewriteCond %{HTTP:Quant-Orig-Host} ^([A-Za-z0-9.-]+(?::[0-9]+)?)$ [NC]
+    RewriteRule ^ - [E=QUANT_HOST:%1]
+</IfModule>
+RequestHeader set Host "%{QUANT_HOST}e" env=QUANT_HOST
+EOF
+
+RUN a2enconf quant-host-snippet
+
+RUN sed -i '/DocumentRoot \/var\/www\/html/a\\n\t# Quant Host header override\n\tIncludeOptional /etc/apache2/conf-enabled/quant-host-snippet.conf' /etc/apache2/sites-available/000-default.conf
+
 # Configure sudo for www-data to run apache2-foreground as root and modify Apache config
 RUN echo 'www-data ALL=(root) NOPASSWD:SETENV: /usr/local/bin/apache2-foreground-real' >> /etc/sudoers.d/wordpress \
     && echo 'www-data ALL=(root) NOPASSWD: /usr/bin/tee -a /etc/apache2/envvars' >> /etc/sudoers.d/wordpress \
