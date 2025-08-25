@@ -25,6 +25,18 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix:
+        php_version: ['7.4', '8.2', '8.3', '8.4']
+        include:
+          - php_version: '8.2' 
+            is_default: true
+          - php_version: '8.4'
+            is_default: false
+          - php_version: '8.3'
+            is_default: false
+          - php_version: '7.4'
+            is_default: false
 
     steps:
       - name: Checkout repository
@@ -48,15 +60,21 @@ jobs:
           push: false
           load: true
           tags: temp-build:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          build-args: |
+            BASE_IMAGE=wordpress:php${{ matrix.php_version }}-apache
+          cache-from: type=gha,scope=php${{ matrix.php_version }}
+          cache-to: type=gha,mode=max,scope=php${{ matrix.php_version }}
 
-      - name: Get WordPress version
-        id: wp-version
+      - name: Get WordPress and PHP versions
+        id: versions
         run: |
           WP_VERSION=$(docker run --rm temp-build:latest wp core version --path=/usr/src/wordpress)
+          PHP_VERSION=$(docker run --rm temp-build:latest php -r "echo PHP_VERSION;")
           echo "WORDPRESS_VERSION=$WP_VERSION" >> $GITHUB_OUTPUT
+          echo "PHP_VERSION=$PHP_VERSION" >> $GITHUB_OUTPUT
           echo "WordPress version: $WP_VERSION"
+          echo "PHP version: $PHP_VERSION"
+          echo "Expected PHP: ${{ matrix.php_version }}"
 
       - name: Extract metadata
         id: meta
@@ -64,12 +82,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=tag
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=v${{ steps.wp-version.outputs.WORDPRESS_VERSION }},enable={{is_default_branch}}
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/develop' }}
-            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/develop' }}
-            type=raw,value=v${{ steps.wp-version.outputs.WORDPRESS_VERSION }}-dev,enable=${{ github.ref == 'refs/heads/develop' }}
+            type=ref,event=tag,suffix=-php${{ matrix.php_version }}
+            type=raw,value=latest,enable=${{ matrix.is_default && github.ref == 'refs/heads/main' }}
+            type=raw,value=php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=dev-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=edge-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}-dev,enable=${{ github.ref == 'refs/heads/develop' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -79,12 +99,14 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BASE_IMAGE=wordpress:php${{ matrix.php_version }}-apache
           cache-from: |
-            type=gha
-            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache
+            type=gha,scope=php${{ matrix.php_version }}
+            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache-php${{ matrix.php_version }}
           cache-to: |
-            type=gha,mode=max
-            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache,mode=max
+            type=gha,mode=max,scope=php${{ matrix.php_version }}
+            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache-php${{ matrix.php_version }},mode=max
 
       - name: Test container startup
         if: github.event_name != 'pull_request'
@@ -93,8 +115,8 @@ jobs:
           docker run --rm temp-build:latest wp --version
 
           # Start a test container without database (just test if it starts)
-          docker run -d --name test-wordpress \
-            -p 8080:80 \
+          docker run -d --name test-wordpress-php${{ matrix.php_version }} \
+            -p 808${{ matrix.php_version == '7.4' && '1' || matrix.php_version == '8.2' && '2' || matrix.php_version == '8.3' && '3' || '4' }}:80 \
             temp-build:latest
 
           # Wait for Apache to start
@@ -102,17 +124,22 @@ jobs:
 
           # Test that Apache is running (will get WordPress database error page, but that's OK)
           # We just want to verify the container starts and Apache serves responses
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 | grep -E "^(200|500|302)$" || exit 1
+          PORT=808${{ matrix.php_version == '7.4' && '1' || matrix.php_version == '8.2' && '2' || matrix.php_version == '8.3' && '3' || '4' }}
+          curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT | grep -E "^(200|500|302)$" || exit 1
 
           # Clean up
-          docker stop test-wordpress
-          docker rm test-wordpress
+          docker stop test-wordpress-php${{ matrix.php_version }}
+          docker rm test-wordpress-php${{ matrix.php_version }}
 
       - name: Create release summary
         if: github.event_name != 'pull_request'
         run: |
-          echo "## WordPress Template Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **WordPress Version**: ${{ steps.wp-version.outputs.WORDPRESS_VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image**: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tagged with**: \`${{ steps.wp-version.outputs.WORDPRESS_VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "## WordPress Template Build Summary (PHP ${{ matrix.php_version }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **WordPress Version**: ${{ steps.versions.outputs.WORDPRESS_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **PHP Version**: ${{ steps.versions.outputs.PHP_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base Image**: \`wordpress:php${{ matrix.php_version }}-apache\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags**: \`php${{ matrix.php_version }}\`, \`${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ matrix.is_default }}" == "true" ]; then
+            echo "- **Default Version**: \`latest\` tag (matches WordPress official default)" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY 
