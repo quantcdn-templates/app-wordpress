@@ -74,7 +74,34 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.11.0/utils/wp-com
     echo '#!/bin/bash' > /usr/local/bin/wp \
     && echo 'if [ -f /tmp/wp-env.sh ]; then source /tmp/wp-env.sh; fi' >> /usr/local/bin/wp \
     && echo 'exec php /usr/local/bin/wp-cli.phar "$@"' >> /usr/local/bin/wp \
-    && chmod +x /usr/local/bin/wp
+    && chmod +x /usr/local/bin/wp \
+    && \
+    # Create fallback wp-env.sh file (entrypoint will update with runtime values)
+    cat > /tmp/wp-env.sh << 'EOF'
+# Fallback environment variables for wp-cli
+# This ensures wp-cli works even if entrypoints are overridden
+# The entrypoint script will update this with actual runtime values
+
+if [ -n "${DB_HOST:-}" ]; then
+    if [ -n "${DB_PORT:-}" ] && [ "${DB_PORT}" != "3306" ]; then
+        export WORDPRESS_DB_HOST="${DB_HOST}:${DB_PORT}"
+    else
+        export WORDPRESS_DB_HOST="${DB_HOST}"
+    fi
+fi
+
+if [ -n "${DB_DATABASE:-}" ]; then
+    export WORDPRESS_DB_NAME="${DB_DATABASE}"
+fi
+
+if [ -n "${DB_USERNAME:-}" ]; then
+    export WORDPRESS_DB_USER="${DB_USERNAME}"
+fi
+
+if [ -n "${DB_PASSWORD:-}" ]; then
+    export WORDPRESS_DB_PASSWORD="${DB_PASSWORD}"
+fi
+EOF
 
 # Note: Quant Host header override already configured in base image
 
