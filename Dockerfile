@@ -105,16 +105,8 @@ RUN { \
 RUN set -eux; \
     a2enmod expires; \
     \
-    # WordPress-specific RemoteIP configuration (different from our base)
-    { \
-        echo 'RemoteIPHeader X-Forwarded-For'; \
-        echo 'RemoteIPInternalProxy 10.0.0.0/8'; \
-        echo 'RemoteIPInternalProxy 172.16.0.0/12'; \
-        echo 'RemoteIPInternalProxy 192.168.0.0/16'; \
-        echo 'RemoteIPInternalProxy 169.254.0.0/16'; \
-        echo 'RemoteIPInternalProxy 127.0.0.0/8'; \
-    } > /etc/apache2/conf-available/wordpress-remoteip.conf; \
-    a2enconf wordpress-remoteip; \
+    # Note: Quant-Client-IP RemoteIPHeader already configured in base image
+    \
     # Fix LogFormat for proper client IP logging
     find /etc/apache2 -type f -name '*.conf' -exec sed -ri 's/([[:space:]]*LogFormat[[:space:]]+"[^"]*)%h([^"]*")/\1%a\2/g' '{}' +
 
