@@ -1,6 +1,7 @@
 # Copy WordPress entrypoint files from official image
+# Use latest WordPress (php8.4) even for PHP 7.4 since WordPress is backwards compatible
 ARG PHP_VERSION=7.4
-FROM wordpress:php${PHP_VERSION}-apache AS wordpress-official
+FROM wordpress:php8.4-apache AS wordpress-official
 
 # Use our secure app-apache-php base image instead of vulnerable WordPress base
 FROM ghcr.io/quantcdn-templates/app-apache-php:${PHP_VERSION}
