@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configure ssmtp (lightweight sendmail replacement) if SMTP relay is NOT enabled
-if [ -n "$QUANT_SMTP_HOST" ] && [ "$QUANT_SMTP_RELAY_ENABLED" != "true" ]; then
+if [ -n "${QUANT_SMTP_HOST:-}" ] && [ "${QUANT_SMTP_RELAY_ENABLED:-}" != "true" ]; then
     echo "Configuring lightweight ssmtp with host: $QUANT_SMTP_HOST"
     
     # Install ssmtp if not already installed

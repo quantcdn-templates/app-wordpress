@@ -56,19 +56,20 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ${{ matrix.php_version == '7.4' && './Dockerfile-7.4' || './Dockerfile' }}
           platforms: linux/amd64
           push: false
           load: true
           tags: temp-build:latest
           build-args: |
-            BASE_IMAGE=wordpress:php${{ matrix.php_version }}-apache
+            PHP_VERSION=${{ matrix.php_version }}
           cache-from: type=gha,scope=php${{ matrix.php_version }}
           cache-to: type=gha,mode=max,scope=php${{ matrix.php_version }}
 
       - name: Get WordPress and PHP versions
         id: versions
         run: |
-          WP_VERSION=$(docker run --rm temp-build:latest wp core version --path=/usr/src/wordpress)
+          WP_VERSION=$(docker run --rm temp-build:latest wp core version --allow-root)
           PHP_VERSION=$(docker run --rm temp-build:latest php -r "echo PHP_VERSION;")
           echo "WORDPRESS_VERSION=$WP_VERSION" >> $GITHUB_OUTPUT
           echo "PHP_VERSION=$PHP_VERSION" >> $GITHUB_OUTPUT
@@ -95,12 +96,13 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ${{ matrix.php_version == '7.4' && './Dockerfile-7.4' || './Dockerfile' }}
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=wordpress:php${{ matrix.php_version }}-apache
+            PHP_VERSION=${{ matrix.php_version }}
           cache-from: |
             type=gha,scope=php${{ matrix.php_version }}
             type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache-php${{ matrix.php_version }}
@@ -112,7 +114,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           # Test that WP-CLI is available in our built image
-          docker run --rm temp-build:latest wp --version
+          docker run --rm temp-build:latest wp --version --allow-root
 
           # Start a test container without database (just test if it starts)
           docker run -d --name test-wordpress-php${{ matrix.php_version }} \
@@ -137,7 +139,8 @@ jobs:
           echo "## WordPress Template Build Summary (PHP ${{ matrix.php_version }})" >> $GITHUB_STEP_SUMMARY
           echo "- **WordPress Version**: ${{ steps.versions.outputs.WORDPRESS_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **PHP Version**: ${{ steps.versions.outputs.PHP_VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Base Image**: \`wordpress:php${{ matrix.php_version }}-apache\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base Image**: \`ghcr.io/quantcdn-templates/app-apache-php:${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dockerfile**: \`${{ matrix.php_version == '7.4' && 'Dockerfile-7.4' || 'Dockerfile' }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Tags**: \`php${{ matrix.php_version }}\`, \`${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
           if [ "${{ matrix.is_default }}" == "true" ]; then
             echo "- **Default Version**: \`latest\` tag (matches WordPress official default)" >> $GITHUB_STEP_SUMMARY
