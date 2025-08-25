@@ -69,13 +69,38 @@ jobs:
       - name: Get WordPress and PHP versions
         id: versions
         run: |
-          WP_VERSION=$(docker run --rm temp-build:latest wp core version --allow-root)
-          PHP_VERSION=$(docker run --rm temp-build:latest php -r "echo PHP_VERSION;")
+          # Start container and let it run full entrypoint chain
+          echo "Starting container to test full entrypoint chain..."
+          docker run -d --name version-test-php${{ matrix.php_version }} \
+            -e WORDPRESS_DB_HOST=localhost \
+            -e WORDPRESS_DB_NAME=wordpress \
+            -e WORDPRESS_DB_USER=root \
+            -e WORDPRESS_DB_PASSWORD=password \
+            temp-build:latest
+
+          # Wait for WordPress setup to complete
+          echo "Waiting for WordPress entrypoint to complete..."
+          sleep 10
+
+          # Test that WP-CLI works in the fully set up environment
+          echo "Testing WP-CLI in fully set up WordPress..."
+          WP_VERSION=$(docker exec version-test-php${{ matrix.php_version }} wp core version --allow-root)
+          PHP_VERSION=$(docker exec version-test-php${{ matrix.php_version }} php -r "echo PHP_VERSION;")
+          
           echo "WORDPRESS_VERSION=$WP_VERSION" >> $GITHUB_OUTPUT
           echo "PHP_VERSION=$PHP_VERSION" >> $GITHUB_OUTPUT
           echo "WordPress version: $WP_VERSION"
           echo "PHP version: $PHP_VERSION"
           echo "Expected PHP: ${{ matrix.php_version }}"
+
+          # Verify WordPress files were copied correctly
+          echo "Verifying WordPress setup..."
+          docker exec version-test-php${{ matrix.php_version }} ls -la /var/www/html/ | head -5
+          docker exec version-test-php${{ matrix.php_version }} test -f /var/www/html/wp-config.php && echo "✅ wp-config.php exists" || echo "❌ wp-config.php missing"
+
+          # Clean up
+          docker stop version-test-php${{ matrix.php_version }}
+          docker rm version-test-php${{ matrix.php_version }}
 
       - name: Extract metadata
         id: meta
@@ -110,22 +135,22 @@ jobs:
             type=gha,mode=max,scope=php${{ matrix.php_version }}
             type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache-php${{ matrix.php_version }},mode=max
 
-      - name: Test container startup
+      - name: Test container HTTP response
         if: github.event_name != 'pull_request'
         run: |
-          # Test that WP-CLI is available in our built image
-          docker run --rm temp-build:latest wp --version --allow-root
-
-          # Start a test container without database (just test if it starts)
+          # Start a test container for HTTP testing
           docker run -d --name test-wordpress-php${{ matrix.php_version }} \
             -p 808${{ matrix.php_version == '7.4' && '1' || matrix.php_version == '8.2' && '2' || matrix.php_version == '8.3' && '3' || '4' }}:80 \
+            -e WORDPRESS_DB_HOST=localhost \
+            -e WORDPRESS_DB_NAME=wordpress \
+            -e WORDPRESS_DB_USER=root \
+            -e WORDPRESS_DB_PASSWORD=password \
             temp-build:latest
 
           # Wait for Apache to start
           sleep 15
 
-          # Test that Apache is running (will get WordPress database error page, but that's OK)
-          # We just want to verify the container starts and Apache serves responses
+          # Test that Apache is serving responses (database error is expected)
           PORT=808${{ matrix.php_version == '7.4' && '1' || matrix.php_version == '8.2' && '2' || matrix.php_version == '8.3' && '3' || '4' }}
           curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT | grep -E "^(200|500|302)$" || exit 1
 
