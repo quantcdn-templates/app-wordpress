@@ -201,4 +201,3 @@ This template is released under the MIT License. See LICENSE file for details.
 For issues and questions:
 - GitHub Issues: [Create an issue](https://github.com/quantcdn-templates/app-wordpress/issues)
 - Documentation: [Quant Cloud Documentation](https://docs.quantcdn.io/)
-- Community: [Quant Discord](https://discord.gg/quant) 
