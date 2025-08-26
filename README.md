@@ -192,6 +192,10 @@ export WORDPRESS_DEBUG_LOG=true
 4. Test with both local development and Quant Cloud deployment
 5. Submit a pull request
 
+## Reporting a Vulnerability
+
+Please email security@quantcdn.io with details. Do not open a public issue for security vulnerabilities.
+
 ## License
 
 This template is released under the MIT License. See LICENSE file for details.
