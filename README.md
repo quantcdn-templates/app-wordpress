@@ -1,10 +1,10 @@
 # WordPress Template for Quant Cloud
 
-A production-ready WordPress template designed for deployment on Quant Cloud. This template uses the standard WordPress Docker image with intelligent environment variable mapping to support Quant Cloud's database configuration.
+A production-ready WordPress template designed for deployment on Quant Cloud. This template uses a secure Apache+PHP base image with multi-stage builds to incorporate WordPress functionality while maintaining security and compatibility.
 
 ## Features
 
-- **WordPress Latest**: Based on the official WordPress Docker image
+- **WordPress Latest**: Uses secure Apache+PHP base with WordPress functionality from official images
 - **Standard Configuration**: Uses WordPress's built-in `wp-config-docker.php` with environment variable mapping
 - **Quant Cloud Integration**: Maps Quant Cloud's `DB_*` variables to WordPress standards
 - **Production Ready**: Includes health checks, proper file permissions, and security considerations
@@ -135,17 +135,17 @@ This template includes WP-CLI (WordPress Command Line Interface) pre-installed a
 
 ### Local Development
 ```bash
-docker-compose exec wordpress wp --info
-docker-compose exec wordpress wp core version
-docker-compose exec wordpress wp plugin list
+docker-compose exec wordpress wp --info --allow-root
+docker-compose exec wordpress wp core version --allow-root
+docker-compose exec wordpress wp plugin list --allow-root
 ```
 
 ### Quant Cloud (via SSH/exec)
 ```bash
-wp --info
-wp core version  
-wp plugin install akismet --activate
-wp theme install twentytwentyfour --activate
+wp --info --allow-root
+wp core version --allow-root
+wp plugin install akismet --activate --allow-root
+wp theme install twentytwentyfour --activate --allow-root
 ```
 
 WP-CLI automatically inherits the environment variables and database configuration, so it works seamlessly with both local and production environments.

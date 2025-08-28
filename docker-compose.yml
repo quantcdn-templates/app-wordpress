@@ -3,13 +3,39 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: wordpress:php7.4-apache
     image: ghcr.io/quantcdn-templates/app-wordpress:latest
     restart: unless-stopped
     ports:
       - "80:80"
-    volumes:
-      - ./wp-content:/var/www/html/wp-content
-      - wordpress_data:/var/www/html
+    #volumes:
+    #  - ./wp-content:/var/www/html/wp-content
+    #  - wordpress_data:/var/www/html
+    environment:
+      # SMTP Configuration
+      - QUANT_SMTP_RELAY_ENABLED=${QUANT_SMTP_RELAY_ENABLED:-false}
+      - QUANT_SMTP_HOST=${QUANT_SMTP_HOST}
+      - QUANT_SMTP_PORT=${QUANT_SMTP_PORT:-587}
+      - QUANT_SMTP_USERNAME=${QUANT_SMTP_USERNAME}
+      - QUANT_SMTP_PASSWORD=${QUANT_SMTP_PASSWORD}
+      - QUANT_SMTP_FROM=${QUANT_SMTP_FROM}
+      - QUANT_SMTP_FROM_NAME=${QUANT_SMTP_FROM_NAME}
+      - QUANT_SMTP_FROM_DOMAIN=${QUANT_SMTP_FROM_DOMAIN}
+      - QUANT_SMTP_HOSTNAME=${QUANT_SMTP_HOSTNAME}
+      # Debug Configuration  
+      - QUANT_DEBUG=${QUANT_DEBUG:-0}
+      - LOG_DEBUG=${LOG_DEBUG:-0}
+      # Quant Plugin Environment Variables (set via override file or ECS task definition)
+      - QUANT_ENABLED=${QUANT_ENABLED}
+      - QUANT_DISABLE_TLS_VERIFY=${QUANT_DISABLE_TLS_VERIFY}
+      - QUANT_HTTP_REQUEST_TIMEOUT=${QUANT_HTTP_REQUEST_TIMEOUT}
+      - QUANT_WEBSERVER_URL=${QUANT_WEBSERVER_URL}
+      - QUANT_WEBSERVER_HOST=${QUANT_WEBSERVER_HOST}
+      - QUANT_API_ENDPOINT=${QUANT_API_ENDPOINT}
+      - QUANT_CUSTOMER=${QUANT_CUSTOMER}
+      - QUANT_PROJECT=${QUANT_PROJECT}
+      - QUANT_TOKEN=${QUANT_TOKEN}
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
       interval: 30s
