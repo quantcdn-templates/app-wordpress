@@ -4,7 +4,7 @@
  * Description: Automatically configure Quant plugin settings from environment variables
  * Version: 1.0.0
  * 
- * This is a mu-plugin (must-use plugin) that automatically sets Quant plugin
+ * The quant-env-config mu-plugin (must-use plugin) automatically sets Quant plugin
  * configuration from environment variables. Place this file in wp-content/mu-plugins/
  * 
  * Environment Variables:

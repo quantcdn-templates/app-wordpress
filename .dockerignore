@@ -30,6 +30,9 @@ npm-debug.log*
 .env
 .env.local
 docker-compose.override.yml
+.ddev/
+.gitpod/
+.gitpod.yml
 
 # WordPress specific excludes
 wp-content/uploads/
@@ -49,4 +52,4 @@ tmp/
 
 # Test files
 tests/
-phpunit.xml 
+phpunit.xml

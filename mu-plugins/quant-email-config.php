@@ -1,6 +1,17 @@
 <?php
-// Quant Email Configuration
-// This mu-plugin configures WordPress email settings from environment variables
+/**
+ * Plugin Name: Quant Email Configuration
+ * Description: Automatically configure WordPress email settings from environment variables
+ * Version: 1.0.0
+ *
+ * The quant-email-config mu-plugin (must-use plugin) configures WordPress email
+ * settings from environment variables. Place this file in wp-content/mu-plugins/
+ *
+ * Environment Variables:
+ * - QUANT_SMTP_FROM_EMAIL: The STMP from email address
+ * - QUANT_SMTP_FROM_NAME_VALUE: The SMTP from name
+ * - QUANT_DEBUG_MODE: Debug mode (1 or 0)
+ */
 
 // Set default 'from' email address if QUANT_SMTP_FROM is configured
 if (defined('QUANT_SMTP_FROM_EMAIL')) {

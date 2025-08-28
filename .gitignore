@@ -30,10 +30,15 @@ wp-content/advanced-cache.php
 wp-content/wp-cache-config.php
 wp-content/upgrade/
 
-# Environment files
+# DDEV-generated local proxy config
+.ddev/traefik/
+
+# Environment files (keep examples)
 .env
 .env.local
 .env.production
+!.env.example
+!.env.*.example
 
 # Local development overrides (not for production deployment)
 docker-compose.override.yml
@@ -43,4 +48,5 @@ docker-compose.override.yml
 Thumbs.db
 
 # Database dumps
-*.sql 
+*.sql
+*.sql.gz
