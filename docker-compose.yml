@@ -9,9 +9,9 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-    #volumes:
-    #  - ./wp-content:/var/www/html/wp-content
-    #  - wordpress_data:/var/www/html
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+      - wordpress_data:/var/www/html
     environment:
       # SMTP Configuration
       - QUANT_SMTP_RELAY_ENABLED=${QUANT_SMTP_RELAY_ENABLED:-false}
