@@ -1,17 +1,12 @@
-name: Build and Publish WordPress Images
+name: Build and Publish WordPress Images (Dev)
 
 on:
   push:
     branches:
-      - main
-    tags:
-      - 'v*'
+      - develop
   pull_request:
     branches:
-      - main
-  schedule:
-    # Run weekly to pick up new WordPress versions
-    - cron: '0 2 * * 1'
+      - develop
   workflow_dispatch:
 
 env:
@@ -26,15 +21,15 @@ jobs:
       packages: write
     strategy:
       matrix:
-        php_version: ['7.4', '8.2', '8.3', '8.4']
+        php_version: ['7.4-dev', '8.2-dev', '8.3-dev', '8.4-dev']
         include:
-          - php_version: '8.2' 
+          - php_version: '8.2-dev' 
             is_default: true
-          - php_version: '8.4'
+          - php_version: '8.4-dev'
             is_default: false
-          - php_version: '8.3'
+          - php_version: '8.3-dev'
             is_default: false
-          - php_version: '7.4'
+          - php_version: '7.4-dev'
             is_default: false
 
     steps:
@@ -118,11 +113,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=tag,suffix=-php${{ matrix.php_version }}
-            type=raw,value=latest,enable=${{ matrix.is_default && github.ref == 'refs/heads/main' }}
-            type=raw,value=php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=dev-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=edge-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}-dev,enable=${{ github.ref == 'refs/heads/develop' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -148,7 +141,7 @@ jobs:
         run: |
           # Start a test container for HTTP testing
           docker run -d --name test-wordpress-php${{ matrix.php_version }} \
-            -p 808${{ matrix.php_version == '7.4' && '1' || matrix.php_version == '8.2' && '2' || matrix.php_version == '8.3' && '3' || '4' }}:80 \
+            -p 808${{ contains(matrix.php_version, '7.4') && '1' || contains(matrix.php_version, '8.2') && '2' || contains(matrix.php_version, '8.3') && '3' || '4' }}:80 \
             -e WORDPRESS_DB_HOST=localhost \
             -e WORDPRESS_DB_NAME=wordpress \
             -e WORDPRESS_DB_USER=root \
@@ -159,7 +152,7 @@ jobs:
           sleep 15
 
           # Test that Apache is serving responses (database error is expected)
-          PORT=808${{ matrix.php_version == '7.4' && '1' || matrix.php_version == '8.2' && '2' || matrix.php_version == '8.3' && '3' || '4' }}
+          PORT=808${{ contains(matrix.php_version, '7.4') && '1' || contains(matrix.php_version, '8.2') && '2' || contains(matrix.php_version, '8.3') && '3' || '4' }}
           curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT | grep -E "^(200|500|302)$" || exit 1
 
           # Clean up
@@ -169,13 +162,13 @@ jobs:
       - name: Create release summary
         if: github.event_name != 'pull_request'
         run: |
-          echo "## WordPress Template Build Summary (PHP ${{ matrix.php_version }})" >> $GITHUB_STEP_SUMMARY
+          echo "## WordPress Template Build Summary (PHP ${{ matrix.php_version }} DEV)" >> $GITHUB_STEP_SUMMARY
           echo "- **WordPress Version**: ${{ steps.versions.outputs.WORDPRESS_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **PHP Version**: ${{ steps.versions.outputs.PHP_VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Base Image**: \`ghcr.io/quantcdn-templates/app-apache-php:${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base Image**: \`ghcr.io/quantcdn-templates/app-apache-php:${{ matrix.php_version }}\` (DEV)" >> $GITHUB_STEP_SUMMARY
           echo "- **Dockerfile**: \`Dockerfile\` (unified for all PHP versions)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tags**: \`php${{ matrix.php_version }}\`, \`${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags**: \`dev-php${{ matrix.php_version }}\`, \`edge-php${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
           if [ "${{ matrix.is_default }}" == "true" ]; then
-            echo "- **Default Version**: \`latest\` tag (matches WordPress official default)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Default Dev Version**: \`dev-php${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY 
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
