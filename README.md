@@ -33,7 +33,7 @@ This template provides two deployment options depending on your needs:
 - ✅ Production-ready setup
 - ✅ Works with Quant Cloud's managed database
 
-### ⚙️ Advanced (Custom Build)
+### ⚙️  Advanced (Custom Build)
 
 **Fork and customize** - For users who need custom plugins, themes, or configuration.
 
@@ -78,6 +78,7 @@ rm .github/workflows/ci.yml
 For both deployment options, you can develop locally using either Docker Compose or DDEV:
 
 ### Option 1: Docker Compose
+
 1. **Clone** your repo (or this template)
 2. **Copy overrides**:
    ```bash
@@ -90,6 +91,7 @@ For both deployment options, you can develop locally using either Docker Compose
 4. **Access WordPress** at http://localhost
 
 ### Option 2: DDEV (Recommended for Developers)
+
 1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
 2. **Start DDEV**:
    ```bash
@@ -113,6 +115,7 @@ DDEV provides additional developer tools like Xdebug, WP-CLI integration, and au
 ## Environment Variables
 
 ### Database Configuration (Automatic)
+
 These are automatically provided by Quant Cloud:
 - `DB_HOST` - Database host
 - `DB_DATABASE` - Database name  
@@ -120,6 +123,7 @@ These are automatically provided by Quant Cloud:
 - `DB_PASSWORD` - Database password
 
 ### Optional WordPress Configuration
+
 - `WORDPRESS_TABLE_PREFIX` - Table prefix (default: `wp_`)
 - `WORDPRESS_DEBUG` - Enable debug mode (default: `false`)
 - `WP_CONFIG_EXTRA` - Additional PHP configuration
@@ -134,6 +138,7 @@ export WP_CONFIG_EXTRA="define('WP_MEMORY_LIMIT', '256M'); define('UPLOAD_MAX_FI
 This template includes WP-CLI (WordPress Command Line Interface) pre-installed and configured.
 
 ### Local Development
+
 ```bash
 docker-compose exec wordpress wp --info --allow-root
 docker-compose exec wordpress wp core version --allow-root
@@ -141,6 +146,7 @@ docker-compose exec wordpress wp plugin list --allow-root
 ```
 
 ### Quant Cloud (via SSH/exec)
+
 ```bash
 wp --info --allow-root
 wp core version --allow-root
@@ -172,13 +178,21 @@ WP-CLI automatically inherits the environment variables and database configurati
 ### Logs
 
 View container logs:
+
+**Docker Compose**
 ```bash
 docker-compose logs -f wordpress
+```
+
+**DDEV**
+```bash
+ddev logs -f
 ```
 
 ### Debug Mode
 
 Enable debug mode:
+
 ```bash
 export WORDPRESS_DEBUG=true
 export WORDPRESS_DEBUG_LOG=true
@@ -192,6 +206,10 @@ export WORDPRESS_DEBUG_LOG=true
 4. Test with both local development and Quant Cloud deployment
 5. Submit a pull request
 
+## Reporting a Vulnerability
+
+Please email security@quantcdn.io with details. Do not open a public issue for security vulnerabilities.
+
 ## License
 
 This template is released under the MIT License. See LICENSE file for details.
@@ -201,4 +219,3 @@ This template is released under the MIT License. See LICENSE file for details.
 For issues and questions:
 - GitHub Issues: [Create an issue](https://github.com/quantcdn-templates/app-wordpress/issues)
 - Documentation: [Quant Cloud Documentation](https://docs.quantcdn.io/)
-- Community: [Quant Discord](https://discord.gg/quant) 

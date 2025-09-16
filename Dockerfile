@@ -161,14 +161,6 @@ EOF
 # Include repository mu-plugins (synced into wp-content at runtime)
 COPY mu-plugins/ /mu-plugins/
 
-# Include Quant config include (synced into site root at runtime)
-COPY quant/ /quant/
-RUN chmod +x /quant/entrypoints.sh && \
-    if [ -d /quant/entrypoints ]; then chmod +x /quant/entrypoints/*; fi
-
-# Copy Quant PHP configuration files (allows users to add custom PHP configs)
-COPY quant/php.ini.d/* /usr/local/etc/php/conf.d/
-
 # Create volume mount point (mirroring official WordPress image)
 VOLUME /var/www/html
 
@@ -188,9 +180,6 @@ RUN ln -svfT docker-entrypoint.sh /usr/local/bin/docker-ensure-installed.sh
 
 # Clear document root so WordPress entrypoint can detect empty directory
 RUN rm -rf /var/www/html/* /var/www/html/.*  2>/dev/null || true
-
-# Set working directory
-WORKDIR /var/www/html
 
 # Use Quant entrypoints -> Official WordPress entrypoint -> Custom Quant setup -> Apache
 ENTRYPOINT ["/quant/entrypoints.sh", "docker-entrypoint.sh"]
