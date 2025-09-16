@@ -13,16 +13,6 @@ services:
       - ./wp-content:/var/www/html/wp-content
       - wordpress_data:/var/www/html
     environment:
-      # SMTP Configuration
-      - QUANT_SMTP_RELAY_ENABLED=${QUANT_SMTP_RELAY_ENABLED:-false}
-      - QUANT_SMTP_HOST=${QUANT_SMTP_HOST:-}
-      - QUANT_SMTP_PORT=${QUANT_SMTP_PORT:-587}
-      - QUANT_SMTP_USERNAME=${QUANT_SMTP_USERNAME:-}
-      - QUANT_SMTP_PASSWORD=${QUANT_SMTP_PASSWORD:-}
-      - QUANT_SMTP_FROM=${QUANT_SMTP_FROM:-}
-      - QUANT_SMTP_FROM_NAME=${QUANT_SMTP_FROM_NAME:-}
-      - QUANT_SMTP_FROM_DOMAIN=${QUANT_SMTP_FROM_DOMAIN:-}
-      - QUANT_SMTP_HOSTNAME=${QUANT_SMTP_HOSTNAME:-}
       # Debug Configuration  
       - QUANT_DEBUG=${QUANT_DEBUG:-0}
       - LOG_DEBUG=${LOG_DEBUG:-0}

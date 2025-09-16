@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Initialize Quant Cloud
-        uses: quantcdn/quant-cloud-init-action@v1
+        uses: quantcdn/quant-cloud-init-action@v1.1.5
         id: init
         with:
           quant_organization: ${{ secrets.QUANT_ORGANIZATION }}
@@ -34,20 +34,43 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: true
           tags: ${{ steps.init.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ steps.init.outputs.quant_application }}:wordpress${{ steps.init.outputs.image_suffix }}
-          cache-from: |
-            type=gha
-            type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache
-          cache-to: |
-            type=gha,mode=max
+          cache-from: type=gha,scope=app-wordpress
+          cache-to: type=gha,mode=max,scope=app-wordpress
 
-      - name: Redeploy environment
+      - name: Create environment if it doesn't exist
+        if: ${{ !startsWith(github.ref, 'refs/tags/') && steps.init.outputs.environment_exists == 'false' }}
+        uses: quantcdn/quant-cloud-environment-action@v1.2.1
+        with:
+          api_key: ${{ secrets.QUANT_API_KEY }}
+          organization: ${{ secrets.QUANT_ORGANIZATION }}
+          app_name: ${{ steps.init.outputs.quant_application }}
+          environment_name: ${{ steps.init.outputs.environment_name }}
+          from_environment: production
+          image_suffix: ${{ steps.init.outputs.image_suffix_clean }}
+
+      - name: Sync database from production to new environment
+        if: ${{ !startsWith(github.ref, 'refs/tags/') && steps.init.outputs.environment_exists == 'false' && steps.init.outputs.environment_name != 'production' }}
+        uses: quantcdn/quant-cloud-environment-sync-action@v1.0.0
+        with:
+          api_key: ${{ secrets.QUANT_API_KEY }}
+          organization: ${{ secrets.QUANT_ORGANIZATION }}
+          app_name: ${{ steps.init.outputs.quant_application }}
+          environment_name: ${{ steps.init.outputs.environment_name }}
+          source: production
+          type: database
+          wait: true
+          wait_interval: 10
+          max_retries: 30
+
+      - name: Redeploy existing environment
+        if: ${{ !startsWith(github.ref, 'refs/tags/') && steps.init.outputs.environment_exists == 'true' }}
         uses: quantcdn/quant-cloud-environment-state-action@v1
         with:
           api_key: ${{ secrets.QUANT_API_KEY }}
           organization: ${{ secrets.QUANT_ORGANIZATION }}
           application: ${{ steps.init.outputs.quant_application }}
           environment: ${{ steps.init.outputs.environment_name }}
-          action: redeploy 
+          action: redeploy

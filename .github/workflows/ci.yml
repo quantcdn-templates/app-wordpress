@@ -27,15 +27,24 @@ jobs:
       packages: write
     strategy:
       matrix:
-        php_version: ['7.4', '8.2', '8.3', '8.4']
+        # Use dev base images on develop branch for complete dev stack testing
+        php_version: ${{ github.ref == 'refs/heads/develop' && fromJson('["7.4-dev", "8.2-dev", "8.3-dev", "8.4-dev"]') || fromJson('["7.4", "8.2", "8.3", "8.4"]') }}
         include:
           - php_version: '8.2' 
             is_default: true
+          - php_version: '8.2-dev'
+            is_default: true
           - php_version: '8.4'
+            is_default: false
+          - php_version: '8.4-dev'
             is_default: false
           - php_version: '8.3'
             is_default: false
+          - php_version: '8.3-dev'
+            is_default: false
           - php_version: '7.4'
+            is_default: false
+          - php_version: '7.4-dev'
             is_default: false
 
     steps:
@@ -56,7 +65,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ${{ matrix.php_version == '7.4' && './Dockerfile-7.4' || './Dockerfile' }}
+          file: ./Dockerfile
           platforms: linux/amd64
           push: false
           load: true
@@ -121,7 +130,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ${{ matrix.php_version == '7.4' && './Dockerfile-7.4' || './Dockerfile' }}
+          file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -165,7 +174,7 @@ jobs:
           echo "- **WordPress Version**: ${{ steps.versions.outputs.WORDPRESS_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **PHP Version**: ${{ steps.versions.outputs.PHP_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Base Image**: \`ghcr.io/quantcdn-templates/app-apache-php:${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Dockerfile**: \`${{ matrix.php_version == '7.4' && 'Dockerfile-7.4' || 'Dockerfile' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dockerfile**: \`Dockerfile\` (unified for all PHP versions)" >> $GITHUB_STEP_SUMMARY
           echo "- **Tags**: \`php${{ matrix.php_version }}\`, \`${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
           if [ "${{ matrix.is_default }}" == "true" ]; then
             echo "- **Default Version**: \`latest\` tag (matches WordPress official default)" >> $GITHUB_STEP_SUMMARY

@@ -1,22 +1,5 @@
 #!/bin/bash
 
-# Execute all scripts in /quant/entrypoints/ then switch to www-data user
-
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] Running Quant entrypoints as root..." >&2
-
-if [ -d /quant/entrypoints ]; then
-  for i in /quant/entrypoints/*; do
-    if [ -r $i ]; then
-      echo "[$(date +'%Y-%m-%d %H:%M:%S')] Executing entrypoint: $(basename $i)" >&2
-      . $i
-    fi
-  done
-  unset i
-  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Quant entrypoints complete" >&2
-else
-  echo "[$(date +'%Y-%m-%d %H:%M:%S')] No /quant/entrypoints directory found" >&2
-fi
-
 # Map Quant Cloud DB environment variables to WordPress format
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Mapping Quant Cloud environment variables..." >&2
 
@@ -73,7 +56,3 @@ fi
 EOF
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] wp-cli environment file created at /tmp/wp-env.sh" >&2
-
-# Run everything as root - simpler and avoids permission issues
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] Starting application as root..." >&2
-exec "$@"
