@@ -8,7 +8,7 @@ This directory contains utility scripts used by the WordPress container.
 WP-CLI wrapper that ensures database environment variables are properly mapped when WP-CLI is executed via `docker exec` or cron jobs (which don't run entrypoints).
 
 **How it works:**
-- Sources `/quant-entrypoints.d/00-wordpress-env-mapping.sh` directly
+- Sources `/quant-entrypoint.d/00-wordpress-env-mapping.sh` directly
 - Maps `DB_*` environment variables to `WORDPRESS_*` variables
 - Executes WP-CLI with all passed arguments
 

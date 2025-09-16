@@ -6,8 +6,8 @@
 
 # Source the WordPress environment mapping script directly
 # This ensures DB_* variables are mapped to WORDPRESS_* variables
-if [ -f /quant-entrypoints.d/00-wordpress-env-mapping.sh ]; then
-    source /quant-entrypoints.d/00-wordpress-env-mapping.sh
+if [ -f /quant-entrypoint.d/00-wordpress-env-mapping.sh ]; then
+    source /quant-entrypoint.d/00-wordpress-env-mapping.sh
 fi
 
 # Execute WP-CLI with all passed arguments

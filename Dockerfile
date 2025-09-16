@@ -30,8 +30,8 @@ COPY mu-plugins/ /mu-plugins/
 COPY quant/quant-include.php /quant/
 
 # Copy custom entrypoint scripts to Quant platform location (if any exist)
-COPY quant/entrypoints/ /quant-entrypoints.d/
-RUN if [ "$(ls -A /quant-entrypoints.d/)" ]; then chmod +x /quant-entrypoints.d/*; fi
+COPY quant/entrypoints/ /quant-entrypoint.d/
+RUN if [ "$(ls -A /quant-entrypoint.d/)" ]; then chmod +x /quant-entrypoint.d/*; fi
 
 # Copy custom PHP configuration files (if any exist)
 COPY quant/php.ini.d/ /usr/local/etc/php/conf.d/
