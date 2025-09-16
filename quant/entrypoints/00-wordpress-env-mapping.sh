@@ -28,31 +28,4 @@ if [ -n "${DB_PASSWORD:-}" ]; then
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] Mapped DB_PASSWORD to WORDPRESS_DB_PASSWORD" >&2
 fi
 
-# Create environment file for wp-cli when accessed via SSH
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] Creating wp-cli environment file..." >&2
-cat > /tmp/wp-env.sh << 'EOF'
-# Auto-generated environment variables for wp-cli
-# This file is sourced by the wp-cli wrapper when run via SSH
-
-if [ -n "${DB_HOST:-}" ]; then
-    if [ -n "${DB_PORT:-}" ] && [ "${DB_PORT}" != "3306" ]; then
-        export WORDPRESS_DB_HOST="${DB_HOST}:${DB_PORT}"
-    else
-        export WORDPRESS_DB_HOST="${DB_HOST}"
-    fi
-fi
-
-if [ -n "${DB_DATABASE:-}" ]; then
-    export WORDPRESS_DB_NAME="${DB_DATABASE}"
-fi
-
-if [ -n "${DB_USERNAME:-}" ]; then
-    export WORDPRESS_DB_USER="${DB_USERNAME}"
-fi
-
-if [ -n "${DB_PASSWORD:-}" ]; then
-    export WORDPRESS_DB_PASSWORD="${DB_PASSWORD}"
-fi
-EOF
-
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] wp-cli environment file created at /tmp/wp-env.sh" >&2
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] Environment variable mapping complete" >&2

@@ -46,7 +46,8 @@ COPY --from=wordpress-official /usr/local/bin/docker-entrypoint.sh /usr/local/bi
 # Copy Quant scripts
 COPY quant/scripts/quant-post-wordpress-setup.sh /usr/local/bin/
 COPY quant/scripts/apache2-foreground-wrapper.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/quant-post-wordpress-setup.sh /usr/local/bin/apache2-foreground-wrapper.sh
+COPY quant/scripts/docker-entrypoint-wrapper.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/quant-post-wordpress-setup.sh /usr/local/bin/apache2-foreground-wrapper.sh /usr/local/bin/docker-entrypoint-wrapper.sh
 
 # Create docker-ensure-installed.sh symlink (https://github.com/docker-library/wordpress/issues/969)
 RUN ln -svfT docker-entrypoint.sh /usr/local/bin/docker-ensure-installed.sh
@@ -54,6 +55,6 @@ RUN ln -svfT docker-entrypoint.sh /usr/local/bin/docker-ensure-installed.sh
 # Clear document root so WordPress entrypoint can detect empty directory
 RUN rm -rf /var/www/html/* /var/www/html/.*  2>/dev/null || true
 
-# Use Official WordPress entrypoint -> Custom Quant setup -> Apache
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Use Wrapper (env mapping) -> WordPress entrypoint -> Custom Quant setup -> Apache
+ENTRYPOINT ["docker-entrypoint-wrapper.sh"]
 CMD ["apache2-foreground-wrapper.sh"] 
