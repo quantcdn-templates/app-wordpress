@@ -1,6 +1,7 @@
 # Copy WordPress entrypoint files from official image
 ARG PHP_VERSION=8.4
-FROM wordpress:php${PHP_VERSION}-apache AS wordpress-official
+ARG WORDPRESS_PHP_VERSION=${PHP_VERSION}
+FROM wordpress:php${WORDPRESS_PHP_VERSION}-apache AS wordpress-official
 
 # Use our secure app-apache-php base image instead of vulnerable WordPress base
 FROM ghcr.io/quantcdn-templates/app-apache-php:${PHP_VERSION}

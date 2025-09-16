@@ -39,6 +39,7 @@ jobs:
           tags: ${{ steps.init.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ steps.init.outputs.quant_application }}:wordpress${{ steps.init.outputs.image_suffix }}
           build-args: |
             PHP_VERSION=${{ github.ref == 'refs/heads/develop' && '8.2-dev' || '8.2' }}
+            WORDPRESS_PHP_VERSION=8.2
           cache-from: type=gha,scope=app-wordpress
           cache-to: type=gha,mode=max,scope=app-wordpress
 

@@ -54,6 +54,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Calculate WordPress PHP version
+        id: php-versions
+        run: |
+          PHP_VERSION="${{ matrix.php_version }}"
+          # Remove -dev suffix for WordPress official image
+          WORDPRESS_PHP_VERSION="${PHP_VERSION%-dev}"
+          echo "php_version=$PHP_VERSION" >> $GITHUB_OUTPUT
+          echo "wordpress_php_version=$WORDPRESS_PHP_VERSION" >> $GITHUB_OUTPUT
+          echo "Using PHP_VERSION=$PHP_VERSION, WORDPRESS_PHP_VERSION=$WORDPRESS_PHP_VERSION"
+
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
@@ -71,7 +81,8 @@ jobs:
           load: true
           tags: temp-build:latest
           build-args: |
-            PHP_VERSION=${{ matrix.php_version }}
+            PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
+            WORDPRESS_PHP_VERSION=${{ steps.php-versions.outputs.wordpress_php_version }}
           cache-from: type=gha,scope=php${{ matrix.php_version }}
           cache-to: type=gha,mode=max,scope=php${{ matrix.php_version }}
 
@@ -136,7 +147,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            PHP_VERSION=${{ matrix.php_version }}
+            PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
+            WORDPRESS_PHP_VERSION=${{ steps.php-versions.outputs.wordpress_php_version }}
           cache-from: |
             type=gha,scope=php${{ matrix.php_version }}
             type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache-php${{ matrix.php_version }}
