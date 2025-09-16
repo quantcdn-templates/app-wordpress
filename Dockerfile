@@ -6,6 +6,9 @@ FROM wordpress:php${WORDPRESS_PHP_VERSION}-apache AS wordpress-official
 # Use our secure app-apache-php base image instead of vulnerable WordPress base
 FROM ghcr.io/quantcdn-templates/app-apache-php:${PHP_VERSION}
 
+# Always remove the default content provided by the base image.
+RUN rm -rf /var/www/html/* /var/www/html/.*  2>/dev/null || true
+
 # Copy WordPress source files from official image (instead of manually downloading)
 COPY --from=wordpress-official --chown=www-data:www-data /usr/src/wordpress /usr/src/wordpress
 # Copy pre-created wp-content structure from official image  
