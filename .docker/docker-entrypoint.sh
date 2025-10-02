@@ -14,5 +14,6 @@ if [ -d "/quant-entrypoint.d" ]; then
     done
 fi
 
-# Pass control to the original docker-entrypoint.sh from WordPress official image
-exec docker-entrypoint.sh "$@"
+# Pass control to the production entrypoint wrapper chain:
+# docker-entrypoint-wrapper.sh -> WordPress docker-entrypoint.sh -> (CMD)
+exec docker-entrypoint-wrapper.sh "$@"

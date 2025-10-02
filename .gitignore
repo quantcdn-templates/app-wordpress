@@ -40,9 +40,6 @@ wp-content/upgrade/
 !.env.example
 !.env.*.example
 
-# Local development overrides (not for production deployment)
-docker-compose.override.yml
-
 # OS Files
 .DS_Store
 Thumbs.db
