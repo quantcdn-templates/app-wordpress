@@ -1,10 +1,26 @@
-# Local development overrides
-# Copy this file to docker-compose.override.yml for local development
-# (docker-compose.override.yml is git-ignored and won't be deployed)
+# Docker Compose Override Example for Local Development
+# 
+# Copy this file to docker-compose.override.yml to enable local development features:
+#   cp docker-compose.override.yml.example docker-compose.override.yml
+#
+# This override:
+# 1. Runs /quant-entrypoint.d/ scripts on container startup (for testing)
+# 2. Sets database environment variables for local MySQL container
+#
+# In production (Quant Cloud), the platform wrapper handles entrypoints automatically.
 
 services:
   wordpress:
+    # Override entrypoint for local dev to run /quant-entrypoint.d/ scripts
+    # This allows testing the same initialization that runs in Quant Cloud
+    entrypoint: ["/usr/local/bin/docker-entrypoint-wordpress.sh"]
+    command: ["apache2-foreground-wrapper.sh"]
+    ports:
+      - "8081:80"  # Use different port to avoid conflicts
+    
     environment:
+      # Environment type
+      - QUANT_ENV_TYPE=development
       # Local development database variables
       - DB_HOST=db
       - DB_PORT=3306

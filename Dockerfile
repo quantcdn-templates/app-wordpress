@@ -20,21 +20,21 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.11.0/utils/wp-com
     && chmod +x /usr/local/bin/wp-cli.phar
 
 # Copy WP-CLI wrapper script that sources environment mapping directly
-COPY quant/scripts/wp-cli-wrapper.sh /usr/local/bin/wp
+COPY .docker/quant/scripts/wp-cli-wrapper.sh /usr/local/bin/wp
 RUN chmod +x /usr/local/bin/wp
 
 # Include repository mu-plugins (synced into wp-content at runtime)
 COPY mu-plugins/ /mu-plugins/
 
 # Include Quant config include (synced into site root at runtime)
-COPY quant/quant-include.php /quant/
+COPY .docker/quant/quant-include.php /quant/
 
 # Copy custom entrypoint scripts to Quant platform location (if any exist)
-COPY quant/entrypoints/ /quant-entrypoint.d/
+COPY .docker/quant/entrypoints/ /quant-entrypoint.d/
 RUN if [ "$(ls -A /quant-entrypoint.d/)" ]; then chmod +x /quant-entrypoint.d/*; fi
 
 # Copy custom PHP configuration files (if any exist)
-COPY quant/php.ini.d/ /usr/local/etc/php/conf.d/
+COPY .docker/quant/php.ini.d/ /usr/local/etc/php/conf.d/
 
 # Create volume mount point (mirroring official WordPress image)
 VOLUME /var/www/html
@@ -44,17 +44,23 @@ COPY --from=wordpress-official --chown=www-data:www-data /usr/src/wordpress/wp-c
 COPY --from=wordpress-official /usr/local/bin/docker-entrypoint.sh /usr/local/bin/
 
 # Copy Quant scripts
-COPY quant/scripts/quant-post-wordpress-setup.sh /usr/local/bin/
-COPY quant/scripts/apache2-foreground-wrapper.sh /usr/local/bin/
-COPY quant/scripts/docker-entrypoint-wrapper.sh /usr/local/bin/
+COPY .docker/quant/scripts/quant-post-wordpress-setup.sh /usr/local/bin/
+COPY .docker/quant/scripts/apache2-foreground-wrapper.sh /usr/local/bin/
+COPY .docker/quant/scripts/docker-entrypoint-wrapper.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/quant-post-wordpress-setup.sh /usr/local/bin/apache2-foreground-wrapper.sh /usr/local/bin/docker-entrypoint-wrapper.sh
 
 # Create docker-ensure-installed.sh symlink (https://github.com/docker-library/wordpress/issues/969)
 RUN ln -svfT docker-entrypoint.sh /usr/local/bin/docker-ensure-installed.sh
 
+# Copy custom entrypoint for local development that runs /quant-entrypoint.d/ scripts
+COPY .docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint-wordpress.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-wordpress.sh
+
 # Clear document root so WordPress entrypoint can detect empty directory
 RUN rm -rf /var/www/html/* /var/www/html/.*  2>/dev/null || true
 
 # Use Wrapper (env mapping) -> WordPress entrypoint -> Custom Quant setup -> Apache
+# In Quant Cloud, platform wrapper runs /quant-entrypoint.d/ scripts
+# For local dev, copy docker-compose.override.yml.example to docker-compose.override.yml
 ENTRYPOINT ["docker-entrypoint-wrapper.sh"]
 CMD ["apache2-foreground-wrapper.sh"] 

@@ -12,6 +12,7 @@ composer_version: "2"
 
 # Environment variables to match production setup
 web_environment:
+    - QUANT_ENV_TYPE=development
     - DB_HOST=db
     - DB_PORT=3306  
     - DB_DATABASE=db
