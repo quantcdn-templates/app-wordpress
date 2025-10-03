@@ -55,6 +55,7 @@ ddev logs -f
 ```bash
 # Via WP-CLI
 ddev wp plugin install akismet --activate
+ddev wp plugin install quant --activate
 ddev wp theme install twentytwentyfour --activate
 
 # Via WordPress admin
@@ -73,4 +74,4 @@ This DDEV setup mirrors the production Docker configuration:
 - Same PHP version and settings
 - Same environment variable handling
 - Same WP-CLI availability
-- Compatible database settings 
+- Compatible database settings
