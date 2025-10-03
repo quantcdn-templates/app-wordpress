@@ -153,6 +153,7 @@ docker-compose exec wordpress wp plugin list --allow-root
 wp --info --allow-root
 wp core version --allow-root
 wp plugin install akismet --activate --allow-root
+wp plugin install quant --activate --allow-root
 wp theme install twentytwentyfour --activate --allow-root
 ```
 

@@ -33,4 +33,6 @@ upload_dirs:
 hooks:
     post-start:
         - exec: wp core download --skip-content --force --allow-root || true
-        - exec: wp config create --dbname=db --dbuser=db --dbpass=db --dbhost=db --allow-root || true 
+        - exec: wp config create --dbname=db --dbuser=db --dbpass=db --dbhost=db --allow-root || true
+        - exec: wp plugin install akismet --activate --allow-root || true
+        - exec: wp plugin install quant --activate --allow-root || true

@@ -20,8 +20,9 @@ services:
       - "8081:80"  # Use different port to avoid conflicts
     
     environment:
-      # Environment type
+      # Environment type and plugins
       - QUANT_ENV_TYPE=development
+      - QUANT_PLUGINS=quant akismet
       # Local development database variables
       - DB_HOST=db
       - DB_PORT=3306
@@ -42,4 +43,4 @@ services:
       - WORDPRESS_AUTH_SALT=
       - WORDPRESS_SECURE_AUTH_SALT=
       - WORDPRESS_LOGGED_IN_SALT=
-      - WORDPRESS_NONCE_SALT= 
+      - WORDPRESS_NONCE_SALT=
