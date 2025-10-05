@@ -112,17 +112,26 @@ jobs:
           docker stop version-test-php${{ matrix.php_version }}
           docker rm version-test-php${{ matrix.php_version }}
 
-      - name: Extract metadata
+      - name: Generate tags
         id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=tag,suffix=-php${{ matrix.php_version }}
-            type=raw,value=latest,enable=${{ matrix.is_default && github.ref == 'refs/heads/main' }}
-            type=raw,value=php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/main' }}
+        run: |
+          TAGS=""
+          
+          # Always create php version tag (e.g., php8.2, php7.4)
+          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:php${{ matrix.php_version }}"
+          
+          # Create WordPress version tag (e.g., v6.8.2-php8.2)
+          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}"
+          
+          # Create latest tag for default version on main branch
+          if [ "${{ matrix.is_default }}" == "true" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          fi
+          
+          # Remove leading comma and set output
+          TAGS="${TAGS#,}"
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "Generated tags: $TAGS"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -132,7 +141,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
             WORDPRESS_PHP_VERSION=${{ steps.php-versions.outputs.wordpress_php_version }}
@@ -174,8 +182,9 @@ jobs:
           echo "- **PHP Version**: ${{ steps.versions.outputs.PHP_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Base Image**: \`ghcr.io/quantcdn-templates/app-apache-php:${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Dockerfile**: \`Dockerfile\` (unified for all PHP versions)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tags**: \`php${{ matrix.php_version }}\`, \`${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
+          TAGS_DISPLAY="\`php${{ matrix.php_version }}\`, \`v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}\`"
           if [ "${{ matrix.is_default }}" == "true" ]; then
-            echo "- **Default Version**: \`latest\` tag (matches WordPress official default)" >> $GITHUB_STEP_SUMMARY
+            TAGS_DISPLAY="$TAGS_DISPLAY, \`latest\`"
           fi
+          echo "- **Tags**: $TAGS_DISPLAY" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY 
