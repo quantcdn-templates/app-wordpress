@@ -152,9 +152,8 @@ docker-compose exec wordpress wp plugin list --allow-root
 ```bash
 wp --info --allow-root
 wp core version --allow-root
-wp plugin install akismet --activate --allow-root
-wp plugin install quant --activate --allow-root
-wp theme install twentytwentyfour --activate --allow-root
+wp plugin install akismet quant --activate --allow-root
+wp theme install twentytwentyfive --activate --allow-root
 ```
 
 WP-CLI automatically inherits the environment variables and database configuration, so it works seamlessly with both local and production environments.

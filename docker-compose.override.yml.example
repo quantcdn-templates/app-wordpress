@@ -17,12 +17,12 @@ services:
     entrypoint: ["/usr/local/bin/docker-entrypoint-wordpress.sh"]
     command: ["apache2-foreground-wrapper.sh"]
     ports:
-      - "8081:80"  # Use different port to avoid conflicts
+      - "80:80"  # Use different port to avoid conflicts
     
     environment:
       # Environment type and plugins
       - QUANT_ENV_TYPE=development
-      - QUANT_PLUGINS=quant akismet
+      - QUANT_PLUGINS=akismet quant
       # Local development database variables
       - DB_HOST=db
       - DB_PORT=3306

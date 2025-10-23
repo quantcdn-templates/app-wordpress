@@ -22,7 +22,7 @@ services:
     environment:
       # Environment type and plugins
       - QUANT_ENV_TYPE=development
-      - QUANT_PLUGINS=quant akismet
+      - QUANT_PLUGINS=akismet quant
       # Local development database variables
       - DB_HOST=db
       - DB_PORT=3306
