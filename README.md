@@ -80,26 +80,26 @@ For both deployment options, you can develop locally using either Docker Compose
 ### Option 1: Docker Compose
 
 1. **Clone** your repo (or this template)
-2. **Use overrides** (required for local development):
+1. **Use overrides** (required for local development):
    ```bash
    docker-compose.override.yml
    ```
    > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment.
-3. **Start services**:
+1. **Start services**:
    ```bash
    docker-compose up -d
    ```
-4. **Access WordPress** at http://localhost
+1. **Access WordPress** at http://localhost
 
 ### Option 2: DDEV (Recommended for Developers)
 
 1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
-2. **Start DDEV**:
+1. **Start DDEV**:
    ```bash
    ddev start
    ```
-3. **Access WordPress** at the provided DDEV URL
-
+1. **Access WordPress** at the provided DDEV URL
+1. **Add Plugins and Integrations**
 DDEV provides additional developer tools like Xdebug, WP-CLI integration, and automatic WordPress setup. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
@@ -207,10 +207,10 @@ export WORDPRESS_DEBUG_LOG=true
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with both local development and Quant Cloud deployment
-5. Submit a pull request
+1. Create a feature branch
+1. Make your changes
+1. Test with both local development and Quant Cloud deployment
+1. Submit a pull request
 
 ## Reporting a Vulnerability
 
