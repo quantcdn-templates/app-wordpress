@@ -60,84 +60,44 @@ inject_wp_config_dynamic_urls() {
 }
 
 # Install and activate plugins defined in QUANT_PLUGINS (comma/space separated).
-# Supports WordPress.org slugs (e.g., "quant akismet") and direct ZIP URLs.
+# Supports WordPress.org slugs (e.g., "akismet quant").
+# Assumes wp-cli is available in the image.
 install_and_activate_plugins() {
     if [ -z "${QUANT_PLUGINS:-}" ]; then
         return 0
     fi
 
-    # Ensure wp-cli is available
-    local have_wp_cli=0
-    if command -v wp >/dev/null 2>&1; then
-        have_wp_cli=1
+    if ! command -v wp >/dev/null 2>&1; then
+        log "wp-cli not found; skipping QUANT_PLUGINS installation"
+        return 0
     fi
 
-    log "Processing QUANT_PLUGINS: ${QUANT_PLUGINS}"
-    local plugins_dir="/var/www/html/wp-content/plugins"
-    mkdir -p "${plugins_dir}"
+    # Only proceed after WordPress is fully installed
+    if ! wp core is-installed --allow-root >/dev/null 2>&1; then
+        log "WordPress is not installed yet; skipping QUANT_PLUGINS install/activation for now"
+        return 0
+    fi
+    
+    # Normalize list (commas/spaces -> single spaced list)
+    normalized_plugins=$(echo "${QUANT_PLUGINS}" | tr ',' ' ' | xargs -n1 echo | sed '/^\s*$/d' | xargs)
+    if [ -z "${normalized_plugins}" ]; then
+        log "QUANT_PLUGINS is empty after normalization; skipping"
+        return 0
+    fi
 
-    echo "${QUANT_PLUGINS}" \
-      | tr ',' ' ' \
-      | xargs -n1 echo \
-      | sed '/^\s*$/d' \
-      | while read -r item; do
-            # If item looks like a URL (contains ://) or ends with .zip, install from URL
-            if echo "$item" | grep -Eq '://|\.zip$'; then
-                log "Installing plugin from URL: $item"
-                if [ "$have_wp_cli" -eq 1 ]; then
-                    wp plugin install "$item" --activate --allow-root || log "Failed to install from URL via wp-cli: $item"
-                else
-                    # Fallback: manual download and extract
-                    tmp_zip="$(mktemp /tmp/plugin.XXXXXX.zip)"
-                    if curl -fsSL "$item" -o "$tmp_zip"; then
-                        unzip -o -q "$tmp_zip" -d "$plugins_dir" || log "Failed to unzip plugin: $item"
-                        rm -f "$tmp_zip"
-                        chown -R www-data:www-data "$plugins_dir" || true
-                        # Try to activate if wp-cli is present later in loop
-                    else
-                        log "Failed to download plugin URL: $item"
-                    fi
-                fi
-                continue
-            fi
+    # Ensure DB is reachable (avoid TLS verification issue locally)
+    if ! wp db check --allow-root -- --ssl-mode=DISABLED >/dev/null 2>&1; then
+        log "Database not reachable yet; skipping plugin install/activation"
+        return 0
+    fi
 
-            # Otherwise treat as a WordPress.org slug
-            local slug="$item"
-            if [ "$have_wp_cli" -eq 1 ]; then
-                if wp plugin is-installed "$slug" --allow-root; then
-                    log "Activating installed plugin: $slug"
-                    wp plugin activate "$slug" --allow-root || log "Failed to activate: $slug"
-                else
-                    log "Installing and activating plugin: $slug"
-                    if ! wp plugin install "$slug" --activate --allow-root; then
-                        log "wp-cli install failed for $slug; attempting manual download"
-                        url="https://downloads.wordpress.org/plugin/${slug}.zip"
-                        tmp_zip="$(mktemp /tmp/plugin.XXXXXX.zip)"
-                        if curl -fsSL "$url" -o "$tmp_zip"; then
-                            unzip -o -q "$tmp_zip" -d "$plugins_dir" || log "Failed to unzip plugin: $slug"
-                            rm -f "$tmp_zip"
-                            chown -R www-data:www-data "$plugins_dir" || true
-                            wp plugin activate "$slug" --allow-root || log "Failed to activate after manual install: $slug"
-                        else
-                            log "Failed to download from $url"
-                        fi
-                    fi
-                fi
-            else
-                # No wp-cli: attempt manual install, activation will be skipped
-                url="https://downloads.wordpress.org/plugin/${slug}.zip"
-                log "wp-cli not available; downloading $slug from $url"
-                tmp_zip="$(mktemp /tmp/plugin.XXXXXX.zip)"
-                if curl -fsSL "$url" -o "$tmp_zip"; then
-                    unzip -o -q "$tmp_zip" -d "$plugins_dir" || log "Failed to unzip plugin: $slug"
-                    rm -f "$tmp_zip"
-                    chown -R www-data:www-data "$plugins_dir" || true
-                    log "Installed $slug (activation skipped without wp-cli)"
-                else
-                    log "Failed to download from $url"
-                fi
-            fi
+    log "Installing/activating plugins: ${normalized_plugins}"
+    if ! wp plugin install ${normalized_plugins} --activate --force --allow-root; then
+        log "Bulk install failed; attempting per-plugin install"
+        for plugin in ${normalized_plugins}; do
+            wp plugin install "${plugin}" --activate --force --allow-root || log "Failed to install/activate: ${plugin}"
         done
+    fi
 }
 
 # Run Quant post-WordPress setup
