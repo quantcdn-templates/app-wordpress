@@ -161,17 +161,22 @@ WP-CLI automatically inherits the environment variables and database configurati
 
 ### Common Issues
 
+1. **Error Establishing a Database Connection**
+   - You might get this error when going to `localhost`
+   - Docker Compose might not be ready, so reload page after a few seconds
+   - If the error persists, see the next item
+
 1. **Database Connection Failed**
    - Check `DB_HOST`, `DB_USERNAME`, `DB_PASSWORD` values
    - Verify database service is running (Quant Cloud manages this)
    - Check network connectivity
 
-2. **Environment Variables Not Working**
+1. **Environment Variables Not Working**
    - Verify variable names match Quant Cloud standards (`DB_*`)
    - Check container logs for environment mapping output
    - Ensure variables are set in deployment environment
 
-3. **Health Check Failures**
+1. **Health Check Failures**
    - Check WordPress is fully started (60s start period)
    - Verify Apache is running
    - Check resource limits
