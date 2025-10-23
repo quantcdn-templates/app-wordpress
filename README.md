@@ -80,27 +80,27 @@ For both deployment options, you can develop locally using either Docker Compose
 ### Option 1: Docker Compose
 
 1. **Clone** your repo (or this template)
-2. **Copy overrides** (required for local development):
+1. **Use overrides** (required for local development):
    ```bash
-   cp docker-compose.override.yml.example docker-compose.override.yml
+   docker-compose.override.yml
    ```
    > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment.
-
-3. **Start services**:
+1. **Start services**:
    ```bash
    docker-compose up -d
    ```
-4. **Access WordPress** at http://localhost
+1. **Access WordPress** at http://localhost
 
 ### Option 2: DDEV (Recommended for Developers)
 
+1. **Clone** your repo (or this template)
 1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
-2. **Start DDEV**:
+1. **Start DDEV**:
    ```bash
    ddev start
    ```
-3. **Access WordPress** at the provided DDEV URL
-
+1. **Access WordPress** at the provided DDEV URL
+1. **Add Plugins and Integrations**
 DDEV provides additional developer tools like Xdebug, WP-CLI integration, and automatic WordPress setup. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
@@ -141,10 +141,18 @@ This template includes WP-CLI (WordPress Command Line Interface) pre-installed a
 
 ### Local Development
 
+**Docker Compose**
 ```bash
 docker-compose exec wordpress wp --info --allow-root
 docker-compose exec wordpress wp core version --allow-root
 docker-compose exec wordpress wp plugin list --allow-root
+```
+
+**DDEV**
+```bash
+ddev wp --info
+ddev wp core version
+ddev wp plugin list
 ```
 
 ### Quant Cloud (via SSH/exec)
@@ -162,17 +170,22 @@ WP-CLI automatically inherits the environment variables and database configurati
 
 ### Common Issues
 
+1. **Error Establishing a Database Connection**
+   - You might get this error when going to `localhost`
+   - Docker Compose might not be ready, so reload page after a few seconds
+   - If the error persists, see the next item
+
 1. **Database Connection Failed**
    - Check `DB_HOST`, `DB_USERNAME`, `DB_PASSWORD` values
    - Verify database service is running (Quant Cloud manages this)
    - Check network connectivity
 
-2. **Environment Variables Not Working**
+1. **Environment Variables Not Working**
    - Verify variable names match Quant Cloud standards (`DB_*`)
    - Check container logs for environment mapping output
    - Ensure variables are set in deployment environment
 
-3. **Health Check Failures**
+1. **Health Check Failures**
    - Check WordPress is fully started (60s start period)
    - Verify Apache is running
    - Check resource limits
@@ -203,10 +216,10 @@ export WORDPRESS_DEBUG_LOG=true
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with both local development and Quant Cloud deployment
-5. Submit a pull request
+1. Create a feature branch
+1. Make your changes
+1. Test with both local development and Quant Cloud deployment
+1. Submit a pull request
 
 ## Reporting a Vulnerability
 

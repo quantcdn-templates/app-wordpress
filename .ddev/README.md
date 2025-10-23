@@ -55,7 +55,7 @@ ddev logs -f
 ```bash
 # Via WP-CLI
 ddev wp plugin install akismet --activate
-ddev wp theme install twentytwentyfour --activate
+ddev wp theme install twentytwentyfive --activate
 
 # Via WordPress admin
 # Visit your DDEV URL and use the admin interface
