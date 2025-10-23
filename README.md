@@ -93,6 +93,7 @@ For both deployment options, you can develop locally using either Docker Compose
 
 ### Option 2: DDEV (Recommended for Developers)
 
+1. **Clone** your repo (or this template)
 1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
 1. **Start DDEV**:
    ```bash
@@ -140,10 +141,18 @@ This template includes WP-CLI (WordPress Command Line Interface) pre-installed a
 
 ### Local Development
 
+**Docker Compose**
 ```bash
 docker-compose exec wordpress wp --info --allow-root
 docker-compose exec wordpress wp core version --allow-root
 docker-compose exec wordpress wp plugin list --allow-root
+```
+
+**DDEV**
+```bash
+ddev wp --info
+ddev wp core version
+ddev wp plugin list
 ```
 
 ### Quant Cloud (via SSH/exec)
