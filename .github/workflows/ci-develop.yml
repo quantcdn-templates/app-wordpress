@@ -1,3 +1,10 @@
+# This workflow is used to build and test the WordPress image.
+# It creates the public, default images that can be deployed directly to Quant Cloud.
+# If you wish to customize, you can fork this repository, make modifications, and then
+# use the "build-deploy.yaml" workflow to build and push your own images to Quant Cloud.
+#
+# NOTE: This workflow only runs for the quantcdn-templates organization.
+# If you've forked this repo, this workflow will be skipped automatically.
 name: Build and Publish WordPress Images (Dev)
 
 on:
@@ -15,7 +22,9 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Only run for quantcdn-templates organization
+    if: github.repository_owner == 'quantcdn-templates'
+    runs-on: ${{ vars.RUNNER_TYPE || 'ubuntu-latest' }}
     permissions:
       contents: read
       packages: write
@@ -61,7 +70,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64
           push: false
           load: true
           tags: temp-build:latest
@@ -107,15 +115,26 @@ jobs:
           docker stop version-test-php${{ matrix.php_version }}
           docker rm version-test-php${{ matrix.php_version }}
 
-      - name: Extract metadata
+      - name: Generate tags
         id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=dev-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/develop' }}
-            type=raw,value=edge-php${{ matrix.php_version }},enable=${{ github.ref == 'refs/heads/develop' }}
-            type=raw,value=v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}-dev,enable=${{ github.ref == 'refs/heads/develop' }}
+        run: |
+          TAGS=""
+          
+          # Always create php version tag (e.g., php8.2-dev, php7.4-dev)
+          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:php${{ matrix.php_version }}"
+          
+          # Create WordPress version tag (e.g., v6.8.2-php8.2-dev)
+          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}"
+          
+          # Create dev tag for default version on develop branch
+          if [ "${{ matrix.is_default }}" == "true" ] && [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+            TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev"
+          fi
+          
+          # Remove leading comma and set output
+          TAGS="${TAGS#,}"
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "Generated tags: $TAGS"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -125,7 +144,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
             WORDPRESS_PHP_VERSION=${{ steps.php-versions.outputs.wordpress_php_version }}
@@ -167,8 +185,9 @@ jobs:
           echo "- **PHP Version**: ${{ steps.versions.outputs.PHP_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Base Image**: \`ghcr.io/quantcdn-templates/app-apache-php:${{ matrix.php_version }}\` (DEV)" >> $GITHUB_STEP_SUMMARY
           echo "- **Dockerfile**: \`Dockerfile\` (unified for all PHP versions)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tags**: \`dev-php${{ matrix.php_version }}\`, \`edge-php${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
+          TAGS_DISPLAY="\`php${{ matrix.php_version }}\`, \`v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}\`"
           if [ "${{ matrix.is_default }}" == "true" ]; then
-            echo "- **Default Dev Version**: \`dev-php${{ matrix.php_version }}\`" >> $GITHUB_STEP_SUMMARY
+            TAGS_DISPLAY="$TAGS_DISPLAY, \`dev\`"
           fi
+          echo "- **Tags**: $TAGS_DISPLAY" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

@@ -9,6 +9,13 @@ FROM ghcr.io/quantcdn-templates/app-apache-php:${PHP_VERSION}
 # Always remove the default content provided by the base image.
 RUN rm -rf /var/www/html/* /var/www/html/.*  2>/dev/null || true
 
+# Install LDAP support for PHP
+RUN apt-get update && apt-get install -y \
+    libldap2-dev \
+    && docker-php-ext-configure ldap \
+    && docker-php-ext-install ldap \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy WordPress source files from official image (instead of manually downloading)
 COPY --from=wordpress-official --chown=www-data:www-data /usr/src/wordpress /usr/src/wordpress
 # Copy pre-created wp-content structure from official image  
