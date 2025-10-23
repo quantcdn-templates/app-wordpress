@@ -80,12 +80,11 @@ For both deployment options, you can develop locally using either Docker Compose
 ### Option 1: Docker Compose
 
 1. **Clone** your repo (or this template)
-2. **Copy overrides** (required for local development):
+2. **Use overrides** (required for local development):
    ```bash
-   cp docker-compose.override.yml.example docker-compose.override.yml
+   docker-compose.override.yml
    ```
    > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment.
-
 3. **Start services**:
    ```bash
    docker-compose up -d
