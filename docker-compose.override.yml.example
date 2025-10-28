@@ -21,7 +21,7 @@ services:
     
     volumes:
       # Mount src for live development (no rebuild needed for code changes)
-      - ./src:/var/www/html:cached
+      # - ./src:/var/www/html:cached
       # Mount dev PHP config to override production settings (zz- prefix ensures it loads last)
       - ./dev-php.ini:/usr/local/etc/php/conf.d/zz-dev.ini:ro
     
