@@ -54,6 +54,11 @@ if ($__quant_host) {
 
 unset($__quant_host, $__quant_scheme);
 
+// Enable TLS/SSL for database connections (RDS with enforced TLS)
+if (!defined('MYSQL_CLIENT_FLAGS')) {
+    define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);
+}
+
 // Store email configuration for WordPress (to be used by mu-plugin later)
 if (!empty($_ENV['QUANT_SMTP_FROM'])) {
     define('QUANT_SMTP_FROM_EMAIL', $_ENV['QUANT_SMTP_FROM']);
