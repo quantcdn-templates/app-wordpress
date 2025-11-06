@@ -30,8 +30,8 @@ wp-content/advanced-cache.php
 wp-content/wp-cache-config.php
 wp-content/upgrade/
 
-# DDEV-generated local proxy config
-.ddev/traefik/
+# Custom overrides to DDEV-generated gitignore
+.ddev/apache/
 
 # Environment files (keep examples)
 .env
