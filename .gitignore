@@ -32,6 +32,7 @@ wp-content/upgrade/
 
 # Custom overrides to DDEV-generated gitignore
 .ddev/apache/
+!.ddev/apache/servername.conf
 
 # Environment files (keep examples)
 .env
