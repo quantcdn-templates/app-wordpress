@@ -31,7 +31,9 @@ upload_dirs:
 
 # Hooks for WordPress setup
 hooks:
+    pre-start:
+        - exec-host: bash -lc 'mkdir -p .ddev/apache && echo "ServerName wordpress-template.ddev.site" > .ddev/apache/servername.conf'
     post-start:
-        - exec: wp core download --skip-content --force --allow-root || true
-        - exec: wp config create --dbname=db --dbuser=db --dbpass=db --dbhost=db --allow-root || true
+        - exec: bash -lc '[ -f index.php ] || wp core download --skip-content --force --allow-root || true'
+        - exec: bash -lc '[ -f wp-config.php ] || wp config create --dbname=db --dbuser=db --dbpass=db --dbhost=db --allow-root || true'
         - exec: wp plugin install akismet quant --activate --allow-root || true
