@@ -77,7 +77,7 @@ install_and_activate_plugins() {
         log "WordPress is not installed yet; skipping QUANT_PLUGINS install/activation for now"
         return 0
     fi
-    
+
     # Normalize list (commas/spaces -> single spaced list)
     normalized_plugins=$(echo "${QUANT_PLUGINS}" | tr ',' ' ' | xargs -n1 echo | sed '/^\s*$/d' | xargs)
     if [ -z "${normalized_plugins}" ]; then
