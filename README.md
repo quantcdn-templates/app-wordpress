@@ -190,6 +190,23 @@ WP-CLI automatically inherits the environment variables and database configurati
    - Verify Apache is running
    - Check resource limits
 
+1. **Restarting Local**
+
+**Docker Compose**
+```bash
+docker-compose down -v
+docker-compose up -d
+
+`**DDEV**
+```bash
+ddev restart
+`
+or
+```bash
+ddev delete wordpress-template
+ddev start
+`
+
 ### Logs
 
 View container logs:
