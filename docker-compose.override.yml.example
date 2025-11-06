@@ -17,7 +17,7 @@ services:
     entrypoint: ["/usr/local/bin/docker-entrypoint-wordpress.sh"]
     command: ["apache2-foreground-wrapper.sh"]
     ports:
-      - "8081:80"  # Use different port to avoid conflicts
+      - "80:80"  # Use different port to avoid conflicts
     
     volumes:
       # Mount src for live development (no rebuild needed for code changes)
@@ -48,4 +48,4 @@ services:
       - WORDPRESS_AUTH_SALT=
       - WORDPRESS_SECURE_AUTH_SALT=
       - WORDPRESS_LOGGED_IN_SALT=
-      - WORDPRESS_NONCE_SALT= 
+      - WORDPRESS_NONCE_SALT=
