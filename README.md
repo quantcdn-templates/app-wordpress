@@ -89,7 +89,12 @@ For both deployment options, you can develop locally using either Docker Compose
    ```bash
    docker-compose up -d
    ```
-1. **Access WordPress** at http://localhost
+1. **Access WordPress** at http://localhost and run through installation
+1. **Add Standard Plugins and Themes**
+   ```bash
+   docker-compose exec wordpress wp plugin install quant --activate --allow-root
+   docker-compose exec wordpress wp theme install twentytwentyfive --activate --allow-root
+   ```
 
 ### Option 2: DDEV (Recommended for Developers)
 
@@ -99,8 +104,13 @@ For both deployment options, you can develop locally using either Docker Compose
    ```bash
    ddev start
    ```
-1. **Access WordPress** at the provided DDEV URL
-1. **Add Plugins and Integrations**
+1. **Access WordPress** at the provided DDEV URL and run through installation
+1. **Add Standard Plugins and Themes**
+   ```bash
+   ddev wp plugin install akismet quant --activate
+   ddev wp theme install twentytwentyfive --activate
+   ```
+1. **Use DDEV Tools**
 DDEV provides additional developer tools like Xdebug, WP-CLI integration, and automatic WordPress setup. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
@@ -160,8 +170,8 @@ ddev wp plugin list
 ```bash
 wp --info --allow-root
 wp core version --allow-root
-wp plugin install akismet --activate --allow-root
-wp theme install twentytwentyfour --activate --allow-root
+wp plugin install akismet quant --activate --allow-root
+wp theme install twentytwentyfive --activate --allow-root
 ```
 
 WP-CLI automatically inherits the environment variables and database configuration, so it works seamlessly with both local and production environments.
@@ -189,6 +199,23 @@ WP-CLI automatically inherits the environment variables and database configurati
    - Check WordPress is fully started (60s start period)
    - Verify Apache is running
    - Check resource limits
+
+1. **Restarting Local**
+
+**Docker Compose**
+```bash
+docker-compose down -v
+docker-compose up -d
+
+`**DDEV**
+```bash
+ddev restart
+`
+or
+```bash
+ddev delete wordpress-template
+ddev start
+`
 
 ### Logs
 
