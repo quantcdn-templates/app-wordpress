@@ -99,8 +99,12 @@ For both deployment options, you can develop locally using either Docker Compose
    ```bash
    ddev start
    ```
-1. **Access WordPress** at the provided DDEV URL
-1. **Add Plugins and Integrations**
+1. **Access WordPress** at the provided DDEV URL and run through installation
+1. **Add Standard Plugins**
+   ```bash
+   ddev wp plugin install akismet quant --activate
+   ```
+1. **Add Additional Plugins and Integrations**
 DDEV provides additional developer tools like Xdebug, WP-CLI integration, and automatic WordPress setup. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
