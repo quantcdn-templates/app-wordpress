@@ -59,51 +59,9 @@ inject_wp_config_dynamic_urls() {
     log "Quant include injected into wp-config.php"
 }
 
-# Install and activate plugins defined in QUANT_PLUGINS (comma/space separated).
-# Supports WordPress.org slugs (e.g., "akismet quant").
-# Assumes wp-cli is available in the image.
-install_and_activate_plugins() {
-    if [ -z "${QUANT_PLUGINS:-}" ]; then
-        return 0
-    fi
-
-    if ! command -v wp >/dev/null 2>&1; then
-        log "wp-cli not found; skipping QUANT_PLUGINS installation"
-        return 0
-    fi
-
-    # Only proceed after WordPress is fully installed
-    if ! wp core is-installed --allow-root >/dev/null 2>&1; then
-        log "WordPress is not installed yet; skipping QUANT_PLUGINS install/activation for now"
-        return 0
-    fi
-
-    # Normalize list (commas/spaces -> single spaced list)
-    normalized_plugins=$(echo "${QUANT_PLUGINS}" | tr ',' ' ' | xargs -n1 echo | sed '/^\s*$/d' | xargs)
-    if [ -z "${normalized_plugins}" ]; then
-        log "QUANT_PLUGINS is empty after normalization; skipping"
-        return 0
-    fi
-
-    # Ensure DB is reachable (avoid TLS verification issue locally)
-    if ! wp db check --allow-root -- --ssl-mode=DISABLED >/dev/null 2>&1; then
-        log "Database not reachable yet; skipping plugin install/activation"
-        return 0
-    fi
-
-    log "Installing/activating plugins: ${normalized_plugins}"
-    if ! wp plugin install ${normalized_plugins} --activate --force --allow-root; then
-        log "Bulk install failed; attempting per-plugin install"
-        for plugin in ${normalized_plugins}; do
-            wp plugin install "${plugin}" --activate --force --allow-root || log "Failed to install/activate: ${plugin}"
-        done
-    fi
-}
-
 # Run Quant post-WordPress setup
 sync_mu_plugins
 inject_wp_config_dynamic_urls
-install_and_activate_plugins
 
 log "Quant post-WordPress setup complete. Starting: $*"
 
