@@ -36,4 +36,3 @@ hooks:
     post-start:
         - exec: bash -lc '[ -f index.php ] || wp core download --skip-content --force --allow-root || true'
         - exec: bash -lc '[ -f wp-config.php ] || wp config create --dbname=db --dbuser=db --dbpass=db --dbhost=db --allow-root || true'
-
