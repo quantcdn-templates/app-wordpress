@@ -92,8 +92,8 @@ For both deployment options, you can develop locally using either Docker Compose
 1. **Access WordPress** at http://localhost and run through installation
 1. **Add Standard Plugins and Themes**
    ```bash
-   docker-compose exec wordpress wp plugin install akismet quant --activate
-   docker-compose exec wordpress wp theme install twentytwentyfive --activate
+   docker-compose exec wordpress wp plugin install quant --activate --allow-root
+   docker-compose exec wordpress wp theme install twentytwentyfive --activate --allow-root
    ```
 
 ### Option 2: DDEV (Recommended for Developers)
