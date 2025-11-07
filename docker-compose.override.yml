@@ -26,9 +26,8 @@ services:
       - ./dev-php.ini:/usr/local/etc/php/conf.d/zz-dev.ini:ro
 
     environment:
-      # Environment type and plugins
+      # Environment type
       - QUANT_ENV_TYPE=development
-      - QUANT_PLUGINS=akismet quant
       # Local development database variables
       - DB_HOST=db
       - DB_PORT=3306
