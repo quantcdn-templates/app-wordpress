@@ -31,8 +31,8 @@ wp-content/wp-cache-config.php
 wp-content/upgrade/
 
 # Custom overrides to DDEV-generated gitignore
-.ddev/apache/
-!.ddev/apache/servername.conf
+.ddev/apache/README.apache.txt
+.ddev/apache/seconddocroot.conf.example
 
 # Environment files (keep examples)
 .env
