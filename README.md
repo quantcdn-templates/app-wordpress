@@ -89,7 +89,12 @@ For both deployment options, you can develop locally using either Docker Compose
    ```bash
    docker-compose up -d
    ```
-1. **Access WordPress** at http://localhost
+1. **Access WordPress** at http://localhost and run through installation
+1. **Add Standard Plugins and Themes**
+   ```bash
+   docker-compose exec wordpress wp plugin install akismet quant --activate
+   docker-compose exec wordpress wp theme install twentytwentyfive --activate
+   ```
 
 ### Option 2: DDEV (Recommended for Developers)
 
@@ -100,11 +105,12 @@ For both deployment options, you can develop locally using either Docker Compose
    ddev start
    ```
 1. **Access WordPress** at the provided DDEV URL and run through installation
-1. **Add Standard Plugins**
+1. **Add Standard Plugins and Themes**
    ```bash
    ddev wp plugin install akismet quant --activate
+   ddev wp theme install twentytwentyfive --activate
    ```
-1. **Add Additional Plugins and Integrations**
+1. **Use DDEV Tools**
 DDEV provides additional developer tools like Xdebug, WP-CLI integration, and automatic WordPress setup. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
