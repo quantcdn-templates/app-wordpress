@@ -23,12 +23,14 @@
 /wp-config-ddev.php
 
 # WordPress dynamic content  
-wp-content/uploads/
-wp-content/cache/
 wp-content/backup-db/
+wp-content/cache/
+wp-content/mu-plugins/
+wp-content/plugins/
+wp-content/upgrade/
+wp-content/uploads/
 wp-content/advanced-cache.php
 wp-content/wp-cache-config.php
-wp-content/upgrade/
 
 # Custom overrides to DDEV-generated gitignore
 .ddev/apache/README.apache.txt
