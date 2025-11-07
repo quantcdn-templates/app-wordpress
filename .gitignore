@@ -1,4 +1,5 @@
 # WordPress core files (auto-downloaded by DDEV)
+/.htaccess
 /index.php
 /license.txt
 /readme.html
