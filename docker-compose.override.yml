@@ -24,7 +24,7 @@ services:
       # - ./src:/var/www/html:cached
       # Mount dev PHP config to override production settings (zz- prefix ensures it loads last)
       - ./dev-php.ini:/usr/local/etc/php/conf.d/zz-dev.ini:ro
-    
+
     environment:
       # Environment type
       - QUANT_ENV_TYPE=development
@@ -48,4 +48,4 @@ services:
       - WORDPRESS_AUTH_SALT=
       - WORDPRESS_SECURE_AUTH_SALT=
       - WORDPRESS_LOGGED_IN_SALT=
-      - WORDPRESS_NONCE_SALT= 
+      - WORDPRESS_NONCE_SALT=
