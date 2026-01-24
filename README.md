@@ -201,6 +201,11 @@ WP-CLI automatically inherits the environment variables and database configurati
    - Verify Apache is running
    - Check resource limits
 
+1. **Port Conflicts**
+   - For docker compose, you may see `ports are not available` errors
+   - If you are running DDEV, turn it off with `ddev poweroff`
+   - If you are running another app, turn it off with `docker compose -p app-name down`
+
 1. **Restarting Local**
 
 **Docker Compose**
