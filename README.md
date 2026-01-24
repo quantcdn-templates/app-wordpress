@@ -82,7 +82,7 @@ For both deployment options, you can develop locally using either Docker Compose
 1. **Clone** your repo (or this template)
 1. **Use overrides** (required for local development):
    ```bash
-   docker-compose.override.yml
+   ls docker-compose.override.yml
    ```
    > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment.
 1. **Start services**:
@@ -170,6 +170,7 @@ ddev wp plugin list
 ```bash
 wp --info --allow-root
 wp core version --allow-root
+wp plugin list --allow-root
 wp plugin install akismet quant --activate --allow-root
 wp theme install twentytwentyfive --activate --allow-root
 ```
