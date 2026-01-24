@@ -14,10 +14,17 @@ if (!defined('ABSPATH')) {
  * Customize Site Health tests for Quant Cloud environment
  */
 add_filter('site_status_tests', function($tests) {
-    // Replace the page_cache async test
+    // Remove the async page_cache test and add our own as a direct test
+    // (async tests use AJAX callbacks which are more complex to override)
     if (isset($tests['async']['page_cache'])) {
-        $tests['async']['page_cache']['test'] = 'quant_test_page_cache';
+        unset($tests['async']['page_cache']);
     }
+
+    // Add our page cache test as a direct test so it shows in results
+    $tests['direct']['quant_page_cache'] = [
+        'label' => __('Page Cache'),
+        'test'  => 'quant_test_page_cache',
+    ];
 
     // Replace plugin_version direct test (handles inactive plugins warning)
     if (isset($tests['direct']['plugin_version'])) {
