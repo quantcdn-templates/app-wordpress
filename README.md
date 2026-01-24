@@ -87,13 +87,13 @@ For both deployment options, you can develop locally using either Docker Compose
    > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment.
 1. **Start services**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 1. **Access WordPress** at http://localhost and run through installation
 1. **Add Standard Plugins and Themes**
    ```bash
-   docker-compose exec wordpress wp plugin install quant --activate --allow-root
-   docker-compose exec wordpress wp theme install twentytwentyfive --activate --allow-root
+   docker compose exec wordpress wp plugin install quant --activate --allow-root
+   docker compose exec wordpress wp theme install twentytwentyfive --activate --allow-root
    ```
 
 ### Option 2: DDEV (Recommended for Developers)
@@ -153,9 +153,9 @@ This template includes WP-CLI (WordPress Command Line Interface) pre-installed a
 
 **Docker Compose**
 ```bash
-docker-compose exec wordpress wp --info --allow-root
-docker-compose exec wordpress wp core version --allow-root
-docker-compose exec wordpress wp plugin list --allow-root
+docker compose exec wordpress wp --info --allow-root
+docker compose exec wordpress wp core version --allow-root
+docker compose exec wordpress wp plugin list --allow-root
 ```
 
 **DDEV**
@@ -205,8 +205,8 @@ WP-CLI automatically inherits the environment variables and database configurati
 
 **Docker Compose**
 ```bash
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 
 `**DDEV**
 ```bash
@@ -224,7 +224,7 @@ View container logs:
 
 **Docker Compose**
 ```bash
-docker-compose logs -f wordpress
+docker compose logs -f wordpress
 ```
 
 **DDEV**
