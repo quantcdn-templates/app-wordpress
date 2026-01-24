@@ -205,6 +205,7 @@ WP-CLI automatically inherits the environment variables and database configurati
    - For docker compose, you may see `ports are not available` errors
    - If you are running DDEV, turn it off with `ddev poweroff`
    - If you are running another app, turn it off with `docker compose -p app-name down`
+   - If using DDEV after docker compose, you will need to turn off the app with the same port or run `docker compose stop`
 
 1. **Restarting Local**
 
