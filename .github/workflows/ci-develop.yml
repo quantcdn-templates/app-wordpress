@@ -32,13 +32,13 @@ jobs:
       matrix:
         php_version: ['7.4-dev', '8.2-dev', '8.3-dev', '8.4-dev']
         include:
+          - php_version: '7.4-dev'
+            is_default: false
           - php_version: '8.2-dev' 
-            is_default: true
-          - php_version: '8.4-dev'
             is_default: false
           - php_version: '8.3-dev'
-            is_default: false
-          - php_version: '7.4-dev'
+            is_default: true
+          - php_version: '8.4-dev'
             is_default: false
 
     steps:
