@@ -82,18 +82,18 @@ For both deployment options, you can develop locally using either Docker Compose
 1. **Clone** your repo (or this template)
 1. **Use overrides** (required for local development):
    ```bash
-   docker-compose.override.yml
+   ls docker-compose.override.yml
    ```
    > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment.
 1. **Start services**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 1. **Access WordPress** at http://localhost and run through installation
 1. **Add Standard Plugins and Themes**
    ```bash
-   docker-compose exec wordpress wp plugin install quant --activate --allow-root
-   docker-compose exec wordpress wp theme install twentytwentyfive --activate --allow-root
+   docker compose exec wordpress wp plugin install quant --activate --allow-root
+   docker compose exec wordpress wp theme install twentytwentyfive --activate --allow-root
    ```
 
 ### Option 2: DDEV (Recommended for Developers)
@@ -153,9 +153,9 @@ This template includes WP-CLI (WordPress Command Line Interface) pre-installed a
 
 **Docker Compose**
 ```bash
-docker-compose exec wordpress wp --info --allow-root
-docker-compose exec wordpress wp core version --allow-root
-docker-compose exec wordpress wp plugin list --allow-root
+docker compose exec wordpress wp --info --allow-root
+docker compose exec wordpress wp core version --allow-root
+docker compose exec wordpress wp plugin list --allow-root
 ```
 
 **DDEV**
@@ -170,6 +170,7 @@ ddev wp plugin list
 ```bash
 wp --info --allow-root
 wp core version --allow-root
+wp plugin list --allow-root
 wp plugin install akismet quant --activate --allow-root
 wp theme install twentytwentyfive --activate --allow-root
 ```
@@ -200,12 +201,18 @@ WP-CLI automatically inherits the environment variables and database configurati
    - Verify Apache is running
    - Check resource limits
 
+1. **Port Conflicts**
+   - For docker compose, you may see `ports are not available` errors
+   - If you are running DDEV, turn it off with `ddev poweroff`
+   - If you are running another app, turn it off with `docker compose -p app-name down`
+   - If using DDEV after docker compose, you will need to turn off the app with the same port or run `docker compose stop`
+
 1. **Restarting Local**
 
 **Docker Compose**
 ```bash
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 
 `**DDEV**
 ```bash
@@ -223,7 +230,7 @@ View container logs:
 
 **Docker Compose**
 ```bash
-docker-compose logs -f wordpress
+docker compose logs -f wordpress
 ```
 
 **DDEV**
