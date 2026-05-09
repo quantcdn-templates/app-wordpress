@@ -77,6 +77,7 @@ jobs:
           file: ./Dockerfile
           push: false
           load: true
+          pull: true
           tags: temp-build:latest
           build-args: |
             PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
@@ -148,6 +149,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
+          pull: true
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
