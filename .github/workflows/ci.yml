@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main
+      - develop
     tags:
       - 'v*'
   pull_request:
@@ -57,6 +58,10 @@ jobs:
         id: php-versions
         run: |
           PHP_VERSION="${{ matrix.php_version }}"
+          # develop builds use the -dev base images (app-apache-php:<ver>-dev)
+          if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+            PHP_VERSION="${PHP_VERSION}-dev"
+          fi
           # Remove -dev suffix for WordPress official image
           WORDPRESS_PHP_VERSION="${PHP_VERSION%-dev}"
           echo "php_version=$PHP_VERSION" >> $GITHUB_OUTPUT
@@ -125,12 +130,19 @@ jobs:
         id: meta
         run: |
           TAGS=""
-          
-          # Always create php version tag (e.g., php8.2, php7.4)
-          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:php${{ matrix.php_version }}"
-          
+
+          # develop builds publish -dev tags only (php8.2-dev), never the
+          # production php<ver> tags
+          DEV_SUFFIX=""
+          if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+            DEV_SUFFIX="-dev"
+          fi
+
+          # Always create php version tag (e.g., php8.2, php7.4, php8.2-dev)
+          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:php${{ matrix.php_version }}${DEV_SUFFIX}"
+
           # Create WordPress version tag (e.g., v6.8.2-php8.2)
-          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}"
+          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}${DEV_SUFFIX}"
           
           # Create latest tag for default version on main branch
           if [ "${{ matrix.is_default }}" == "true" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
