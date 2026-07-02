@@ -43,6 +43,10 @@ RUN if [ "$(ls -A /quant-entrypoint.d/)" ]; then chmod +x /quant-entrypoint.d/*;
 # Copy custom PHP configuration files (if any exist)
 COPY .docker/quant/php.ini.d/ /usr/local/etc/php/conf.d/
 
+# WordPress-specific OPcache exclusions (runtime-generated PHP: Wordfence
+# wflogs, cache dirs). Overwrites the base image's empty blacklist.
+COPY .docker/quant/opcache-blacklist.txt /usr/local/etc/php/opcache-blacklist.txt
+
 # Create volume mount point (mirroring official WordPress image)
 VOLUME /var/www/html
 

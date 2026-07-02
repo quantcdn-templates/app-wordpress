@@ -1,0 +1,9 @@
+; WordPress-specific OPcache exclusions (prefix match, one per line).
+; Overwrites the base image's empty blacklist. These paths contain PHP
+; generated/rewritten at runtime - caching them either serves stale
+; security rules or churns the cache. They are recompiled on each request
+; instead, which keeps them correct when opcache.validate_timestamps=0.
+/var/www/html/wp-content/wflogs
+/var/www/html/wp-content/cache
+/var/www/html/wp-content/et-cache
+/var/www/html/wp-content/uploads
