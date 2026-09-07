@@ -17,6 +17,9 @@ concurrency:
   group: build-and-push-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  QUANT_BASE_URL: ${{ vars.QUANT_BASE_URL || 'https://dashboard.quantcdn.io/api/v3' }}
+
 jobs:
   build-and-push:
     runs-on: ${{ vars.RUNNER_TYPE || 'ubuntu-latest' }}
