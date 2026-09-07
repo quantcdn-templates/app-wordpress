@@ -5,7 +5,6 @@ services:
       dockerfile: Dockerfile
       args:
         BASE_IMAGE: wordpress:php7.4-apache
-    image: ghcr.io/quantcdn-templates/app-wordpress:latest
     restart: unless-stopped
     ports:
       - "80:80"
