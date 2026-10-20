@@ -46,6 +46,18 @@ if (!empty($_SERVER['HTTP_QUANT_ORIG_HOST'])) {
 }
 
 $__quant_host = $_SERVER['HTTP_HOST'] ?? null;
+
+// Health checks reach the task directly by IP or localhost, not through the edge.
+// A URL built from that host leaks into anything WordPress caches (e.g. Beaver
+// Builder layout assets), so fall back to the site's stored home/siteurl instead.
+if ($__quant_host) {
+    $__quant_name = trim(preg_replace('/:\d+$/', '', $__quant_host), '[]');
+    if (strcasecmp($__quant_name, 'localhost') === 0 || filter_var($__quant_name, FILTER_VALIDATE_IP) !== false) {
+        $__quant_host = null;
+    }
+    unset($__quant_name);
+}
+
 if ($__quant_host) {
     $__quant_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     define('WP_HOME', $__quant_scheme . '://' . $__quant_host);

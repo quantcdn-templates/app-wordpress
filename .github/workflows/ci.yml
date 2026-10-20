@@ -121,6 +121,12 @@ jobs:
           docker stop version-test-php${{ matrix.php_version }}
           docker rm version-test-php${{ matrix.php_version }}
 
+      - name: Test WP_HOME host handling
+        run: |
+          docker run --rm --entrypoint sh \
+            -v "$PWD/tests:/tests:ro" \
+            temp-build:latest /tests/quant-include-host.sh
+
       - name: Generate tags
         id: meta
         run: |
