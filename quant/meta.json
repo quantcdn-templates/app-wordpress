@@ -1,0 +1,10 @@
+[{
+    "title": "WordPress",
+    "url": "/deploy/app/app-wordpress",
+    "summary": "WordPress is the most popular open source CMS for websites and blogs.",
+    "content": "Deploy WordPress with PHP, Apache and MySQL on Quant Cloud. Includes platform integration for the Quant plugin, SMTP relay, and persistent wp-content storage.",
+    "categories": ["php", "cms", "wordpress"],
+    "tags": ["wordpress", "php", "cms", "blog", "mysql"],
+    "template_type": "app",
+    "requires_db": true
+}]
