@@ -8,7 +8,7 @@ log() {
 
 log "Running Quant post-WordPress setup..."
 
-# Sync repository-provided mu-plugins into the EFS-mounted wp-content on each start
+# Sync repository-provided mu-plugins into the shared-filesystem-mounted wp-content on each start
 sync_mu_plugins() {
     local source_dir="/mu-plugins"
     local target_dir="/var/www/html/wp-content/mu-plugins"

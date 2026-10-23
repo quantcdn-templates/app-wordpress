@@ -3,7 +3,7 @@
 # Relocate Wordfence's wflogs directory from the (network) persistent volume
 # to container-local disk. The Wordfence WAF re-reads several MB of PHP data
 # files from wflogs on every request and rewrites its state files continuously;
-# on network storage where I/O is billed (EFS) that is the dominant traffic on
+# on network storage where I/O is billed (shared filesystem) that is the dominant traffic on
 # otherwise-idle sites. WAF state is per-node by design on load-balanced
 # setups: on a fresh container Wordfence re-syncs rules from its API, so local
 # storage only costs that node's attack-log history (still visible in the
@@ -25,7 +25,7 @@ wants_relocation() {
     case "$QUANT_WF_LOCAL_WFLOGS" in
         1) return 0 ;;
         auto)
-            # Relocate in auto mode only when wflogs sits on NFS (e.g. EFS).
+            # Relocate in auto mode only when wflogs sits on NFS (a network-attached volume).
             # A pre-existing symlink means a previous boot already decided.
             [ -L "$WFLOGS" ] && return 0
             fstype=$(stat -f -c %T "$WFLOGS" 2>/dev/null)

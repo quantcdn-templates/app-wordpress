@@ -4,11 +4,11 @@
  * Description: Resets PHP OPcache when WordPress plugins/themes change so that
  *              admin-driven updates take effect immediately on the current
  *              container. OPcache is configured with revalidate_freq=3600 in
- *              production to minimise EFS metadata I/O; this plugin ensures
+ *              production to minimise filesystem metadata I/O; this plugin ensures
  *              admin operations aren't subject to that delay on the container
  *              where the operation happens. Other containers in the same
  *              service will pick up changes within the revalidate_freq window.
- *              For emergency propagation, force a new ECS deployment.
+ *              For emergency propagation, force a new service deployment.
  * Version:     1.0.0
  * Author:      Quant
  */
