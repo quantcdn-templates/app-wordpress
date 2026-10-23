@@ -119,9 +119,9 @@ DDEV provides additional developer tools like Xdebug, WP-CLI integration, and au
 
 | Feature | Local Development | Quant Cloud |
 |---------|------------------|-------------|
-| **Database** | MySQL container | Managed RDS |
+| **Database** | MySQL container | Managed database |
 | **Environment** | `docker-compose.override.yml` | Platform variables |
-| **Storage** | Local volumes | EFS persistent storage |
+| **Storage** | Local volumes | Shared filesystem persistent storage |
 | **Scaling** | Single container | Auto-scaling |
 | **Debug** | Enabled by default | Production optimized |
 | **Access** | localhost | Custom domains + CDN |
@@ -140,11 +140,11 @@ These are automatically provided by Quant Cloud:
 
 - `WORDPRESS_TABLE_PREFIX` - Table prefix (default: `wp_`)
 - `WORDPRESS_DEBUG` - Enable debug mode (default: `false`)
-- `WP_CONFIG_EXTRA` - Additional PHP configuration
+- `WORDPRESS_CONFIG_EXTRA` - Additional PHP configuration
 
 **Example:**
 ```bash
-export WP_CONFIG_EXTRA="define('WP_MEMORY_LIMIT', '256M'); define('UPLOAD_MAX_FILESIZE', '64M');"
+export WORDPRESS_CONFIG_EXTRA="define('WP_MEMORY_LIMIT', '256M'); define('UPLOAD_MAX_FILESIZE', '64M');"
 ```
 
 ## WP-CLI Support
