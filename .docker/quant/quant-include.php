@@ -66,7 +66,7 @@ if ($__quant_host) {
 
 unset($__quant_host, $__quant_scheme);
 
-// Enable TLS/SSL for database connections (RDS with enforced TLS)
+// Enable TLS/SSL for database connections (managed database with enforced TLS)
 if (!defined('MYSQL_CLIENT_FLAGS')) {
     define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);
 }

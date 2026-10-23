@@ -39,7 +39,7 @@ services:
       - WORDPRESS_DEBUG=true
       - WORDPRESS_DEBUG_LOG=true
       - WORDPRESS_DEBUG_DISPLAY=true
-      - WP_CONFIG_EXTRA=
+      - WORDPRESS_CONFIG_EXTRA=
       # WordPress security keys (will be auto-generated if not provided)
       - WORDPRESS_AUTH_KEY=
       - WORDPRESS_SECURE_AUTH_KEY=

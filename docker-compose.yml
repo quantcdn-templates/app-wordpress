@@ -19,7 +19,7 @@ services:
       # Debug Configuration  
       - QUANT_DEBUG=${QUANT_DEBUG:-0}
       - LOG_DEBUG=${LOG_DEBUG:-0}
-      # Quant Plugin Environment Variables (set via override file or ECS task definition)
+      # Quant Plugin Environment Variables (set via override file or task definition)
       - QUANT_ENABLED=${QUANT_ENABLED:-}
       - QUANT_DISABLE_TLS_VERIFY=${QUANT_DISABLE_TLS_VERIFY:-}
       - QUANT_HTTP_REQUEST_TIMEOUT=${QUANT_HTTP_REQUEST_TIMEOUT:-}
