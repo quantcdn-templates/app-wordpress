@@ -4,6 +4,7 @@ x-quant-labels:
 
 services:
   wordpress:
+    image: ghcr.io/quantcdn-templates/app-wordpress:latest
     build:
       context: ./
       dockerfile: Dockerfile
