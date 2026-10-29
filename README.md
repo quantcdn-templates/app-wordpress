@@ -270,3 +270,9 @@ This template is released under the MIT License. See LICENSE file for details.
 For issues and questions:
 - GitHub Issues: [Create an issue](https://github.com/quantcdn-templates/app-wordpress/issues)
 - Documentation: [Quant Cloud Documentation](https://docs.quantcdn.io/)
+
+## Managed database TLS
+
+Managed database connections verify the server certificate using the shared
+`/opt/rds-ca-certs/rds-ca-cert-bundle.pem` trust bundle, matching Drupal.
+Set `DISABLE_DB_TLS=true` only for a local development database.

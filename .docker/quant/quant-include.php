@@ -68,7 +68,9 @@ unset($__quant_host, $__quant_scheme);
 
 // Enable TLS/SSL for database connections (managed database with enforced TLS)
 if (!defined('MYSQL_CLIENT_FLAGS')) {
-    define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);
+    // The PHP base trusts the shared RDS CA bundle; mysqli verifies it.
+    // Match Drupal's explicit local-development opt-out.
+    define('MYSQL_CLIENT_FLAGS', getenv('DISABLE_DB_TLS') === 'true' ? 0 : MYSQLI_CLIENT_SSL);
 }
 
 // Store email configuration for WordPress (to be used by mu-plugin later)
