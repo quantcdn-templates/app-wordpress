@@ -65,6 +65,21 @@ jobs:
           echo "wordpress_php_version=$WORDPRESS_PHP_VERSION" >> $GITHUB_OUTPUT
           echo "Using PHP_VERSION=$PHP_VERSION, WORDPRESS_PHP_VERSION=$WORDPRESS_PHP_VERSION"
 
+      - name: Resolve the current WordPress release for this PHP line
+        id: wp-release
+        run: |
+          # The official wordpress:phpX image stops getting WordPress updates when
+          # docker-library drops a PHP line (php7.4 froze at 6.1.1). Ask WordPress
+          # for its newest release that supports this PHP line, and build that.
+          V=$(curl -fsS "https://api.wordpress.org/core/version-check/1.7/?php=${{ steps.php-versions.outputs.wordpress_php_version }}" \
+            | jq -r '[.offers[] | select(.response == "upgrade")][0].current // empty')
+          [ -n "$V" ] || { echo "::error::WordPress offered no release for PHP ${{ matrix.php_version }}"; exit 1; }
+          echo "version=$V" >> $GITHUB_OUTPUT
+          echo "Building WordPress $V for PHP ${{ matrix.php_version }}"
+
+      - name: Test the WordPress core update script
+        run: sh tests/wordpress-core-update.sh
+
       - name: Log in to Container Registry
         uses: docker/login-action@v4
         with:
@@ -84,6 +99,7 @@ jobs:
           build-args: |
             PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
             WORDPRESS_PHP_VERSION=${{ steps.php-versions.outputs.wordpress_php_version }}
+            WORDPRESS_VERSION=${{ steps.wp-release.outputs.version }}
           cache-from: type=gha,scope=php${{ matrix.php_version }}
           cache-to: type=gha,mode=max,scope=php${{ matrix.php_version }}
 
@@ -113,6 +129,10 @@ jobs:
           echo "WordPress version: $WP_VERSION"
           echo "PHP version: $PHP_VERSION"
           echo "Expected PHP: ${{ matrix.php_version }}"
+          if [ "$WP_VERSION" != "${{ steps.wp-release.outputs.version }}" ]; then
+            echo "::error::Image has WordPress $WP_VERSION, expected ${{ steps.wp-release.outputs.version }}"
+            exit 1
+          fi
 
           # Verify WordPress files were copied correctly
           echo "Verifying WordPress setup..."
@@ -162,6 +182,7 @@ jobs:
           build-args: |
             PHP_VERSION=${{ steps.php-versions.outputs.php_version }}
             WORDPRESS_PHP_VERSION=${{ steps.php-versions.outputs.wordpress_php_version }}
+            WORDPRESS_VERSION=${{ steps.wp-release.outputs.version }}
           cache-from: |
             type=gha,scope=php${{ matrix.php_version }}
             type=registry,ref=ghcr.io/quantcdn-templates/app-wordpress:cache-php${{ matrix.php_version }}

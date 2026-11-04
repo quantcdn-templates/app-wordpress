@@ -3,6 +3,15 @@ ARG PHP_VERSION=8.4
 ARG WORDPRESS_PHP_VERSION=${PHP_VERSION}
 FROM wordpress:php${WORDPRESS_PHP_VERSION}-apache AS wordpress-official
 
+# WordPress core, brought up to WORDPRESS_VERSION when the official image is older.
+# The official image stops getting WordPress updates when docker-library drops a
+# PHP line (php7.4 froze at 6.1.1), so CI passes the newest release WordPress
+# offers for this PHP line. Empty WORDPRESS_VERSION keeps the official image's core.
+FROM wordpress-official AS wordpress-core
+ARG WORDPRESS_VERSION=
+COPY .docker/quant/scripts/wordpress-core-update.sh /usr/local/bin/wordpress-core-update.sh
+RUN sh /usr/local/bin/wordpress-core-update.sh "${WORDPRESS_VERSION}" /usr/src/wordpress
+
 # Use our secure app-apache-php base image instead of vulnerable WordPress base
 FROM ghcr.io/quantcdn-templates/app-apache-php:${PHP_VERSION}
 
@@ -16,8 +25,8 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install ldap \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy WordPress source files from official image (instead of manually downloading)
-COPY --from=wordpress-official --chown=www-data:www-data /usr/src/wordpress /usr/src/wordpress
+# Copy WordPress source files (official image, brought up to WORDPRESS_VERSION)
+COPY --from=wordpress-core --chown=www-data:www-data /usr/src/wordpress /usr/src/wordpress
 # Copy pre-created wp-content structure from official image  
 COPY --from=wordpress-official --chown=www-data:www-data /var/www/html/wp-content /var/www/html/wp-content
 
