@@ -156,7 +156,11 @@ jobs:
           
           # Always create php version tag (e.g., php8.2, php7.4)
           TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:php${{ matrix.php_version }}"
-          
+
+          # Legacy bare tag (e.g., 7.4, 8.3). Older builds published it and customer
+          # Dockerfiles still use it, so keep it on the current build for that line.
+          TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.php-versions.outputs.wordpress_php_version }}"
+
           # Create WordPress version tag (e.g., v6.8.2-php8.2)
           TAGS="$TAGS,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.versions.outputs.WORDPRESS_VERSION }}-php${{ matrix.php_version }}"
           
