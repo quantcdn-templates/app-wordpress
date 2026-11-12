@@ -18,7 +18,7 @@ on:
       - main
   schedule:
     # Run daily at midnight UTC to pick up new WordPress versions
-    - cron: '0 0 * * *'
+    - cron: '27 14 * * *'
   workflow_dispatch:
 
 env:
